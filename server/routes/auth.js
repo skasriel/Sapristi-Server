@@ -24,7 +24,7 @@ function IsAuthenticated(req,res,next) {
   }
 }
 
-router.get('/register', function(req, res) {
+/*router.get('/register', function(req, res) {
   console.log("In GET /register");
   var formData = new Object();
   for (var propName in req.query) {
@@ -34,7 +34,7 @@ router.get('/register', function(req, res) {
       }
   }
   res.send(formData);
-});
+});*/
 
 // User registration
 router.post('/register', function(req, res) {
@@ -42,33 +42,37 @@ router.post('/register', function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
   var mobileNumber = req.body.mobileNumber;
+  var authToken = password;
 
-    var user = new User({
-        'username' : req.body.username,
-        'mobileNumber': req.body.mobileNumber
-    });
-    console.log("Fake creating user: "+user);
+  var user = new User({
+      'username' : req.body.username,
+      'mobileNumber': req.body.mobileNumber,
+      'authToken': authToken
+  });
 
-    /*User.register(user, password, function(err, account) {
-        console.log("error? registering user: "+err+" user: "+account);
+  User.register(user, password, function(err, account) {
+      console.log("error? registering user: "+err+" user: "+account);
+      if (err) {
+        res.status(401);
+        return res.send(401);
+      }
+      console.log("Now creating the req session");
+      req.login(user, function(err) {
         if (err) {
-          res.status(401);
-          return res.send(401);
+          console.log("err in session: "+err);
+          return next(err);
         }
-        console.log("Now creating the req session");
-        req.login(user, function(err) {
-          if (err) {
-            console.log("err in session: "+err);
-            return next(err);
-          }
-          console.log("Created session for "+user);
-          res.status(200);
-          res.send(200);
-          //res.redirect(HOME+"#/"+req.user.username);
-        });
-    });*/
-    res.status(200);
-    res.send("OK");
+        console.log("Created session for "+username);
+
+        var results = {
+          "username": username,
+          "authToken": authToken
+        };
+        res.status(200);
+        res.send(results);
+
+      });
+  });
 });
 
 
