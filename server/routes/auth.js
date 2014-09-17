@@ -24,6 +24,12 @@ function IsAuthenticated(req,res,next) {
   }
 }
 
+router.get('/register', function(req, res) {
+  console.log("In GET /register");
+  var dummy = {"test": "yes", "ta mere": "en short"};
+  res.send(dummy);
+});
+
 // User registration
 router.post('/register', function(req, res) {
   var username = req.body.username;
@@ -34,9 +40,9 @@ router.post('/register', function(req, res) {
         'username' : req.body.username,
         'mobileNumber': req.body.mobileNumber
     });
-    console.log("Creating user: "+user);
+    console.log("Fake creating user: "+user);
 
-    User.register(user, password, function(err, account) {
+    /*User.register(user, password, function(err, account) {
         console.log("error? registering user: "+err+" user: "+account);
         if (err) {
           res.status(401);
@@ -53,7 +59,9 @@ router.post('/register', function(req, res) {
           res.send(200);
           //res.redirect(HOME+"#/"+req.user.username);
         });
-    });
+    });*/
+    res.status(200);
+    res.send("OK");
 });
 
 
