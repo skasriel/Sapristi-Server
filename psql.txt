@@ -1,0 +1,11 @@
+psql
+create user sapristi with password 'changeme';
+create database Sapristi with owner = sapristi;
+
+psql -U sapristi
+create table t (code integer not null);
+select * from t;
+insert into t values (44);
+
+SELECT current_database();
+\q

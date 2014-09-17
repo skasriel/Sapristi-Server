@@ -1,0 +1,46 @@
+ionic start Sapristi tabs
+cordova platform add ios
+ionic build ios
+ionic emulate ios  --- run in iOS simulator
+ionic serve   --- create local web server on port 8000
+
+-- cordova plugins
+cordova plugin add org.apache.cordova.contacts
+
+-- for publishing (see http://ionicframework.com/docs/guide/publishing.html)
+cordova plugin rm org.apache.cordova.console --- remove unused plugins
+
+
+
+
+# start mongo
+
+# connect to mongo terminal
+/usr/local/mongodb/bin/mongo sapristi
+show dbs
+show collections
+use sapristi
+db.<collection>.find().pretty()
+db.<collection>.find().printjson()
+
+
+# git
+git tag -a v1.4 -m 'my version 1.4'
+
+# github
+git clone https://github.com/skasriel/collab.git
+git push origin master
+
+# set up heroku
+heroku login
+heroku create
+
+# heroku
+git commit -a -m
+git push heroku master
+heroku config:set NODE_ENV=staging
+heroku ps:scale web=1
+heroku restart
+heroku open
+heroku logs --source app
+heroku foreman start

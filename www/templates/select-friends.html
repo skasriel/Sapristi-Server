@@ -1,0 +1,44 @@
+<ion-view title="Select Friends">
+  <ion-content class="has-header padding" >
+    These contacts are already on Sapristi. Add them to your friends list.
+
+
+    <form ng-submit="addFriends()" ng-controller="RegisterCtrl">
+      <ion-list>
+        <ion-item ng-repeat="contact in registeredUsers" type="item-text-wrap">
+
+          <div class="item item-button-right item-avatar">
+              <img src="{{contact.defaultPhoto}}">
+              <h2>{{contact.displayName}}</h2>
+              <p>{{contact.availability}}
+              <i class="icon {{contact.availabilityIcon}}"></i>
+              </p>
+              {{contact.registeredPhoneNumber}}
+          </div>
+
+        </ion-item>
+      </ion-list>
+
+      <input type="submit" value="Add as friends" class="button button-block button-balanced icon-right ion-chevron-right">
+</form>
+
+
+
+    These contacts are not on Sapristi. Invite them to join.
+    <ion-list>
+      <ion-item ng-repeat="contact in nonUsers" type="item-text-wrap">
+
+          <ion-checkbox ng-model="check_unregistered">
+            <img src="{{contact.defaultPhoto}}">
+            <h2>{{contact.displayName}}</h2>
+            {{contact.phoneNumbers[0]}}
+          </ion-checkbox>
+
+      </ion-item>
+    </ion-list>
+
+
+
+
+  </ion-content>
+</ion-view>

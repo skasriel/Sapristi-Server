@@ -1,0 +1,49 @@
+<ion-view title="Friends">
+
+
+  <ion-content class="has-header">
+
+<!-- Search
+<div class="bar bar-header item-input-inset">
+  <label class="item-input-wrapper">
+    <i class="icon ion-ios7-search placeholder-icon"></i>
+    <input type="search" placeholder="Search">
+  </label>
+  <button class="button button-clear">
+    Cancel
+  </button>
+</div>
+-->
+
+    <div class="list">
+      <label class="item item-input item-select">
+        <div class="input-label">My Availability</div>
+        <select>
+          <option>Eager</option>
+          <option selected>Available</option>
+          <option>Busy</option>
+        </select>
+      </label>
+    </div>
+
+    <ion-list>
+      <ion-item ng-repeat="friend in contacts" type="item-text-wrap" href="#/tab/friend/{{friend.id}}">
+
+
+        <div class="item item-button-right item-avatar">
+            <img src="{{friend.defaultPhoto}}">
+            <h2>{{friend.displayName}}</h2>
+            <p>{{friend.availability}}
+            <i class="icon {{friend.availabilityIcon}}"></i>
+            </p>
+
+          <button class="button button-positive"><a href="tel:1-408-506-0781">
+            <i class="icon ion-ios7-telephone"></i></a>
+          </button>
+        </div>
+
+      </ion-item>
+    </ion-list>
+
+  </ion-content>
+</ion-view>
