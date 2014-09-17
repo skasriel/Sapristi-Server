@@ -32,6 +32,7 @@ router.get('/register', function(req, res) {
 
 // User registration
 router.post('/register', function(req, res) {
+  console.log("In Post /register");
   var username = req.body.username;
   var password = req.body.password;
   var mobileNumber = req.body.mobileNumber;
