@@ -26,8 +26,14 @@ function IsAuthenticated(req,res,next) {
 
 router.get('/register', function(req, res) {
   console.log("In GET /register");
-  var dummy = {"test": "yes", "ta mere": "en short"};
-  res.send(dummy);
+  var formData = new Object();
+  for (var propName in req.query) {
+      if (req.query.hasOwnProperty(propName) {
+          console.log(propName, req.query[propName]);
+          formData[propName] = req.query[propName];
+      }
+  }
+  res.send(formData);
 });
 
 // User registration
