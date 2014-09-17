@@ -28,7 +28,7 @@ router.get('/register', function(req, res) {
   console.log("In GET /register");
   var formData = new Object();
   for (var propName in req.query) {
-      if (req.query.hasOwnProperty(propName) {
+      if (req.query.hasOwnProperty(propName)) {
           console.log(propName, req.query[propName]);
           formData[propName] = req.query[propName];
       }
