@@ -85,12 +85,14 @@ router.post('/confirmation-code',  isAuthenticated, function(req, res) {
   // Mark user as confirmed in database
   // Store to database
   var username = req.username;
+  console.log("Looking up user: "+username);
   User.find({ where: { username: username }})
     .error(function(err) {
         console.log("Unable to get user "+username);
         done(err);
       })
     .success(function(user) {
+      console.log("found user: "+user);
       user.userState = User.UserStateEnum.CONFIRMED;
       user.save()
         .error(function(error) {
