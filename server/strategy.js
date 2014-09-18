@@ -21,12 +21,15 @@ var strategy = {};
   }
 );
 strategy.validPassword = function(password) {
+  console.log("Strategy.validPassport: "+password+" ? "+this.password);
   return this.password === password;
 }
-strategy.serializeUser = function(user, done){
+strategy.serializeUser = function(user, done) {
+  console.log("Strategy.serializeUser: "+user);ß
   done(null, user);
 };
-strategy.deserializeUser = function(obj, done){
+strategy.deserializeUser = function(obj, done) {
+  console.log("Strategy.deserializeUser: "+obj);
   done(null, obj);
 };
 module.exports = strategy;
