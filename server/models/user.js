@@ -9,7 +9,7 @@ var User = sequelize.define('User', {
   username:     { type: Sequelize.STRING, primaryKey: true},
 	hashedPassword: { type: Sequelize.STRING},
 	salt:         { type: Sequelize.STRING},
-  password:     { type: Sequelize.STRING},
+  //password:     { type: Sequelize.STRING},
   mobileNumber: { type: Sequelize.STRING},
   authToken:    { type: Sequelize.STRING},
   availability: { type: Sequelize.STRING}, //Sequelize.ENUM('AVAILABLE', 'UNKNOWN', 'BUSY')},

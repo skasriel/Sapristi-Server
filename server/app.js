@@ -8,6 +8,7 @@ var session      = require('express-session');
 var flash    = require('connect-flash');
 
 var auth = require('./routes/auth');
+var me = require('./routes/me');
 var friends = require('./routes/friends');
 var contacts = require('./routes/contacts');
 
@@ -52,6 +53,7 @@ app.use(flash()); // use connect-flash for flash messages stored in session
 app.use(express.static(path.join(__dirname, '../www')));
 
 app.use('/api/auth', auth);
+app.use('/api/me', me);
 app.use('/api/contacts', contacts);
 app.use('/api/friends', friends);
 

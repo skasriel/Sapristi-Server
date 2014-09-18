@@ -4,18 +4,8 @@ var express = require('express');
 var router = express.Router();
 var User = require('../models/user');
 var Contact = require('../models/contact');
+var auth = require('./auth');
 
-
-function IsAuthenticated(req,res,next) {
-  if(req.isAuthenticated()) {
-      next();
-  } else {
-    res.status(401);
-    res.send(401);
-    console.log("Not authorized "+req);
-    next(new Error(401));
-  }
-}
 
 /** Returns a mongoose promise that can be exec()
 */
@@ -44,7 +34,7 @@ function sendRegisteredUsersFromContactList(req, res, allPhoneNumbers) {
 * POST list of iPhone contacts to be stored in mongo
 * Returns the subset of the list that corresponds to a Sapristi user
 */
-router.post('/', IsAuthenticated, function (req, res) {
+router.post('/', auth.isAuthenticated, function (req, res) {
   console.log("in POST /api/contacts. Active user is: "+req.user.username);
 
   User.findOne({'username' : req.user.username}).exec(function (err, activeUser) {

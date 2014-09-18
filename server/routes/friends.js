@@ -2,19 +2,7 @@
 
 var express = require('express');
 var router = express.Router();
-
-
-function IsAuthenticated(req,res,next) {
-  if(req.isAuthenticated()) {
-      next();
-  } else {
-    res.status(401);
-    res.send(401);
-
-    console.log("Not authorized "+req);
-    next(new Error(401));
-  }
-}
+var auth = require('./auth');
 
 /** Returns a mongoose promise that can be exec()
 */
@@ -31,7 +19,7 @@ function IsAuthenticated(req,res,next) {
 /**
 * Get friend list
 */
-router.get('/', IsAuthenticated, function (req, res) {
+router.get('/', auth.isAuthenticated, function (req, res) {
   console.log("in /api/friends ");
   var friends = new Array();
   friends.push({

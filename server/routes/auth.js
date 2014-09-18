@@ -9,15 +9,13 @@ var passport = require('passport'),
 
 var OK = {"status": "ok"};
 
-
-function IsAuthenticated(req,res,next) {
+function isAuthenticated(req,res,next) {
   if(req.isAuthenticated()) {
       next();
   } else {
+    console.log("User isn't authenticated, returning 401");
     res.status(401);
     res.send(401);
-
-    console.log("Not authorized "+req);
     next(new Error(401));
   }
 }
@@ -67,7 +65,7 @@ router.post('/register', function(req, res) {
 });
 
 // Verify mobile number confirmation code
-router.post('/confirmation-code',  IsAuthenticated, function(req, res) {
+router.post('/confirmation-code',  isAuthenticated, function(req, res) {
   console.log("In Post /confirmation-code");
   var confirmationCode = req.body.confirmationCode;
   // Here should validate code with Twilio or something...
@@ -117,3 +115,5 @@ router.get('/connect/google/callback',
   */
 
 module.exports = router;
+module.exports.isAuthenticated = isAuthenticated;
+module.exports.OK = OK;
