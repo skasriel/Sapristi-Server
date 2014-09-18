@@ -46,19 +46,19 @@ router.post('/register', function(req, res) {
     return res.send(401);
   }).success(function() {
     console.log("Created new user in DB: "+username+" id="+user.id);
-    //req.login(user, function(err) {
-      // if (err) {
-      //   console.log("error creating session: "+err);
-      //   res.status(401);
-      //   return res.send(401);
-      // }
+    req.login(user, function(err) {
+      if (err) {
+         console.log("error creating session: "+err);
+         res.status(401);
+         return res.send(401);
+      }
       var results = {
         "username": username,
         "authToken": authToken
       };
       res.status(200);
       res.send(results);
-    //});
+    });
   });
 });
 

@@ -9,7 +9,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(username, done) {
-  console.log("deserialize: "+usernamr);
+  console.log("deserialize: "+username);
   User.find({where: {username: username}}).success(function(user){
     console.log('Session: { username: ' + user.username + ', username: ' + user.username + ' }');
     done(null, user);
