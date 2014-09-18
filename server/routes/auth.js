@@ -9,6 +9,7 @@ var passport = require('passport'),
 
 var OK = {"status": "ok"};
 
+// Shared function to verify that the user is logged in before attempting to respond to GET/POST
 function isAuthenticated(req,res,next) {
   if(req.isAuthenticated()) {
       next();
@@ -19,6 +20,17 @@ function isAuthenticated(req,res,next) {
     next(new Error(401));
   }
 }
+
+router.post('/login', passport.authenticate('local'), function(req, res) {
+    console.log("logging in");
+    res.send(OK);
+});
+
+router.get('/logout', function(req, res) {
+    req.logout();
+    res.send(OK);
+});
+
 
 
 // User registration
@@ -62,13 +74,35 @@ router.post('/register', function(req, res) {
   });
 });
 
+
 // Verify mobile number confirmation code
-router.post('/confirmation-code' /*,  isAuthenticated*/ , function(req, res) {
+router.post('/confirmation-code',  isAuthenticated, function(req, res) {
   console.log("In Post /confirmation-code");
   var confirmationCode = req.body.confirmationCode;
+
   // Here should validate code with Twilio or something...
 
   // Mark user as confirmed in database
+  // Store to database
+  var username = req.username;
+  User.find({ where: { username: username }})
+    .error(function(err) {
+        console.log("Unable to get user "+username);
+        done(err);
+      })
+    .success(function(user) {
+      user.userState = User.UserStateEnum.CONFIRMED;
+      user.save()
+        .error(function(error) {
+          console.log("Unable to change state for "+username+" because of error: "+error);
+          res.status(401);
+          return res.send(401);
+        })
+        .success(function() {
+          res.status(200);
+          res.send(OK);
+        })
+    });
 
   res.status(200);
   res.send(OK);
@@ -77,15 +111,6 @@ router.post('/confirmation-code' /*,  isAuthenticated*/ , function(req, res) {
 
 
 
-router.post('/login', passport.authenticate('local'), function(req, res) {
-    console.log("logging in");
-    res.send(OK);
-});
-
-router.get('/logout', function(req, res) {
-    req.logout();
-    res.send(OK);
-});
 
 
 

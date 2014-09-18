@@ -16,7 +16,7 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   var newAvailability = req.body.availability;
 
   // Store to database
-  User.find({ where: { username: username }})
+  User.find({ where: { username: req.username }})
     .error(function(err) {
         console.log("Unable to get user "+username);
         done(err);

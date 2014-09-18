@@ -35,6 +35,17 @@ var User = sequelize.define('User', {
 //User.drop();
 User.sync();
 
+User.UserStateEnum = {
+  GHOST: 'GHOST',
+  CREATED: 'CREATED',
+  CONFIRMED: 'CONFIRMED'
+};
+
+User.AvailabilityEnum = {
+  AVAILABLE: 'AVAILABLE',
+  UNKNOWN: 'UNKNOWN',
+  BUSY: 'BUSY'
+};
 
 
 /*var mongoose = require('mongoose'),

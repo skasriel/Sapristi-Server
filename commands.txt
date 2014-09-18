@@ -73,7 +73,8 @@ from INFORMATION_SCHEMA.COLUMNS where table_name = 's_user'
 git tag -a v1.4 -m 'my version 1.4'
 
 # github
-git clone https://github.com/skasriel/collab.git
+git remote add origin https://github.com/skasriel/Sapristi-Server.git
+//git clone https://github.com/skasriel/collab.git
 git push origin master
 
 # set up heroku
