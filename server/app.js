@@ -67,14 +67,11 @@ console.log("Connecting to MongoDB on "+mongoURL);
 mongoose.connect(mongoURL);
 
 
-/*var pg = require('pg');
-var conString = "postgres://sapristi:changeme@localhost:5432/sapristi";
-
+var pg = require('pg');
+var conString = process.env.DATABASE_URL || "postgres://sapristi:changeme@localhost:5432/sapristi";
 var client = new pg.Client(conString);
 client.connect();
-
 console.log("Connected to "+conString);
-*/
 
 
 /// error handlers

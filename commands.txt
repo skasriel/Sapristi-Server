@@ -23,6 +23,43 @@ use sapristi
 db.<collection>.find().pretty()
 db.<collection>.find().printjson()
 
+# psql
+psql
+create user sapristi with password 'changeme';
+create database Sapristi with owner = sapristi;
+
+psql -U sapristi
+create table t (code integer not null);
+select * from t;
+insert into t values (44);
+
+drop table s_user;
+drop table s_connections;
+drop table s_phoneNumbers;
+
+CREATE TYPE e_availability AS ENUM ('AVAILABLE', 'UNKNOWN', 'BUSY');
+CREATE TYPE e_connectionState AS ENUM ('INVITED', 'CONNECTED');
+CREATE TYPE e_userState AS ENUM ('GHOST', 'CREATED', 'CONFIRMED')
+
+
+create table s_user (username varchar (255) primary key,
+                      password varchar(255),
+                      mobileNumber varchar(255),
+                      authToken varchar(255),
+                      availability e_availability,
+                      birthday date,
+                      userState e_userState);
+
+create table s_connections (fromUser varchar(255) references s_user(username),
+                            toUser varchar(255) references s_user(username),
+                            connectionState e_connectionState);
+
+create table s_phoneNumbers (username varchar(255) references s_user(username),
+                              phoneNumber varchar(255))
+
+SELECT current_database();
+\q
+
 
 # git
 git tag -a v1.4 -m 'my version 1.4'
@@ -35,6 +72,7 @@ git push origin master
 heroku login
 heroku create
 heroku addons:add mongolab
+heroku addons:add heroku-postgresql:dev
 
 # heroku
 git commit -a -m
