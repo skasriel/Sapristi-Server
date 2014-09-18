@@ -65,7 +65,7 @@ router.post('/register', function(req, res) {
 });
 
 // Verify mobile number confirmation code
-router.post('/confirmation-code',  isAuthenticated, function(req, res) {
+router.post('/confirmation-code' /*,  isAuthenticated*/ , function(req, res) {
   console.log("In Post /confirmation-code");
   var confirmationCode = req.body.confirmationCode;
   // Here should validate code with Twilio or something...
