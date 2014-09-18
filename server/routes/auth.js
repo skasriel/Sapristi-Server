@@ -7,12 +7,10 @@ var router = express.Router();
 var passport = require('passport'),
     User = require('../models/user');
 
-var HOME = '/index.html', LOGIN='/login.html';
+var OK = {"status": "ok"};
 
 
 function IsAuthenticated(req,res,next) {
-  //next(); // for now, bypass authentication
-
   if(req.isAuthenticated()) {
       next();
   } else {
@@ -24,17 +22,6 @@ function IsAuthenticated(req,res,next) {
   }
 }
 
-/*router.get('/register', function(req, res) {
-  console.log("In GET /register");
-  var formData = new Object();
-  for (var propName in req.query) {
-      if (req.query.hasOwnProperty(propName)) {
-          console.log(propName, req.query[propName]);
-          formData[propName] = req.query[propName];
-      }
-  }
-  res.send(formData);
-});*/
 
 // User registration
 router.post('/register', function(req, res) {
@@ -74,7 +61,6 @@ router.post('/register', function(req, res) {
       });
   });
 });
-var ok = {"status": "ok"};
 
 // Verify mobile number confirmation code
 router.post('/confirmation-code',  IsAuthenticated, function(req, res) {
@@ -85,7 +71,7 @@ router.post('/confirmation-code',  IsAuthenticated, function(req, res) {
   // Mark user as confirmed in database
 
   res.status(200);
-  res.send(ok);
+  res.send(OK);
 });
 
 
@@ -93,19 +79,19 @@ router.post('/confirmation-code',  IsAuthenticated, function(req, res) {
 
 router.post('/login', passport.authenticate('local'), function(req, res) {
     console.log("logging in");
-    res.redirect(HOME);
+    res.send(OK);
 });
 
 router.get('/logout', function(req, res) {
     req.logout();
-    res.redirect(LOGIN);
+    res.send(OK);
 });
 
 
 
 // google ---------------------------------
 // send to google to do the authentication
-router.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
+/*router.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
 
 // the callback after google has authenticated the user
 router.get('/auth/google/callback',
@@ -124,5 +110,6 @@ router.get('/connect/google/callback',
     successRedirect : HOME,
     failureRedirect : LOGIN
   }));
+  */
 
 module.exports = router;
