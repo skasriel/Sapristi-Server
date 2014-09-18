@@ -25,7 +25,7 @@ strategy.validPassword = function(password) {
   return this.password === password;
 }
 strategy.serializeUser = function(user, done) {
-  console.log("Strategy.serializeUser: "+user);ß
+  console.log("Strategy.serializeUser: "+user);
   done(null, user);
 };
 strategy.deserializeUser = function(obj, done) {
