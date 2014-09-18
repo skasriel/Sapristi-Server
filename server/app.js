@@ -11,9 +11,11 @@ var auth = require('./routes/auth');
 var friends = require('./routes/friends');
 var contacts = require('./routes/contacts');
 
+
 var app = express();
 
 var mongoose = require('mongoose');
+var Sequelize = require('sequelize');
 //var mongoStore = require('connect-mongo')(express); //doesn't seem to work with express4
 var passport = require('passport');
 
@@ -31,11 +33,17 @@ app.use(session({ secret: 'changemeinprod' })); // session secret
 
 
 /** Configure Passport for Auth */
-var LocalStrategy    = require('passport-local').Strategy;
+/*var LocalStrategy    = require('passport-local').Strategy;
 var User = require('./models/user');
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+*/
+
+var strategy = require('./strategy.js')
+passport.serializeUser(strategy.serializeUser);
+passport.deserializeUser(strategy.deserializeUser);
+
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
@@ -54,24 +62,9 @@ app.use(function(req, res, next) {
     next(err);
 });
 
-/** Database */
-var db = mongoose.connection;
-db.on('error', console.error);
-db.once('open', function() {
-  // Create your schemas and models here.
-  console.log("success");
-});
-
-var mongoURL = process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/workplace_database';
-console.log("Connecting to MongoDB on "+mongoURL);
-mongoose.connect(mongoURL);
+var sequelize = require('./db.js').sequelize;
 
 
-var pg = require('pg');
-var conString = process.env.DATABASE_URL || "postgres://sapristi:changeme@localhost:5432/sapristi";
-var client = new pg.Client(conString);
-client.connect();
-console.log("Connected to "+conString);
 
 
 /// error handlers

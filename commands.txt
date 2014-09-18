@@ -11,6 +11,8 @@ cordova plugin add org.apache.cordova.contacts
 cordova plugin rm org.apache.cordova.console --- remove unused plugins
 
 
+# curl
+curl --data "username=123&mobileNumber=123&password=abc" http://localhost:3000/api/auth/register
 
 
 # start mongo
@@ -58,6 +60,10 @@ create table s_phoneNumbers (username varchar(255) references s_user(username),
                               phoneNumber varchar(255))
 
 SELECT current_database();
+
+select column_name, data_type, character_maximum_length
+from INFORMATION_SCHEMA.COLUMNS where table_name = 's_user'
+
 \q
 
 

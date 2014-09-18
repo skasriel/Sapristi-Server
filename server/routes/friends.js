@@ -5,14 +5,12 @@ var router = express.Router();
 
 
 function IsAuthenticated(req,res,next) {
-  //next(); // for now, bypass authentication
-
   if(req.isAuthenticated()) {
       next();
   } else {
     res.status(401);
     res.send(401);
-    
+
     console.log("Not authorized "+req);
     next(new Error(401));
   }

@@ -31,40 +31,37 @@ router.post('/register', function(req, res) {
   var mobileNumber = req.body.mobileNumber;
   var authToken = password;
 
-  var user = new User({
+  var user = User.create({
       'username' : req.body.username,
       'mobileNumber': req.body.mobileNumber,
       'authToken': authToken
-  });
-
-  User.register(user, password, function(err, account) {
-      console.log("error? registering user: "+err+" user: "+account);
+  }).error(function(error) {
+    console.log("Unable to create user "+username+" because of error: "+error);
+    res.status(401);
+    return res.send(401);
+  }).success(function() {
+    console.log("Created new user in DB: "+username);
+    req.login(user, function(err) {
       if (err) {
+        console.log("error creating session: "+err);
         res.status(401);
         return res.send(401);
       }
-      console.log("Now creating the req session");
-      req.login(user, function(err) {
-        if (err) {
-          console.log("err in session: "+err);
-          return next(err);
-        }
-        console.log("Created session for "+username);
 
-        var results = {
-          "username": username,
-          "authToken": authToken
-        };
-        res.status(200);
-        res.send(results);
-
-      });
+      console.log("Created session for "+username);
+      var results = {
+        "username": username,
+        "authToken": authToken
+      };
+      res.status(200);
+      res.send(results);
+    });
   });
 });
 
 // Verify mobile number confirmation code
 router.post('/confirmation-code',  IsAuthenticated, function(req, res) {
-  console.log("In Post /register");
+  console.log("In Post /confirmation-code");
   var confirmationCode = req.body.confirmationCode;
   // Here should validate code with Twilio or something...
 
