@@ -12,7 +12,7 @@ cordova plugin rm org.apache.cordova.console --- remove unused plugins
 
 
 # curl
-curl --data "username=123&mobileNumber=123&password=abc" http://localhost:3000/api/auth/register
+curl --data "username=22123&mobileNumber=123&password=abc" http://localhost:5000/api/auth/register
 
 
 # start mongo

@@ -1,6 +1,49 @@
-var PassportLocalStrategy = require('passport-local').Strategy;
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var User = require('./models/user.js');
 
+//Serialize sessions
+passport.serializeUser(function(user, done) {
+  console.log("serialize: "+user+" "+user.username);
+  done(null, user.username);
+});
 
+passport.deserializeUser(function(username, done) {
+  console.log("deserialize: "+usernamr);
+  User.find({where: {username: username}}).success(function(user){
+    console.log('Session: { username: ' + user.username + ', username: ' + user.username + ' }');
+    done(null, user);
+  }).error(function(err) {
+    console.log("error: "+err);
+    done(err, null);
+  });
+});
+
+//Use local strategy
+passport.use(new LocalStrategy({
+    usernameField: 'username',
+    passwordField: 'password'
+  },
+  function(username, password, done) {
+    console.log("Looking for username: "+username);
+    User.find({ where: { username: username }}).success(function(user) {
+      if (!user) {
+        done(null, false, { message: 'Unknown user' });
+      } else if (!user.authenticate(password)) {
+        done(null, false, { message: 'Invalid password'});
+      } else {
+        console.log('Login (local) : { username: ' + user.username + ', username: ' + user.username + ' }');
+        done(null, user);
+      }
+    }).error(function(err){
+      done(err);
+    });
+  }
+));
+
+module.exports = passport;
+
+/*
 var strategy = {};
   strategy.localStrategy = new PassportLocalStrategy({
     username: 'username',
@@ -37,3 +80,4 @@ strategy.deserializeUser = function(obj, done) {
   done(null, obj);
 };
 module.exports = strategy;
+*/

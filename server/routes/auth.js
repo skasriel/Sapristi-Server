@@ -31,16 +31,23 @@ router.post('/register', function(req, res) {
   var mobileNumber = req.body.mobileNumber;
   var authToken = password;
 
-  var user = User.create({
+
+  var user = User.build({
       'username' : req.body.username,
       'mobileNumber': req.body.mobileNumber,
       'authToken': authToken
-  }).error(function(error) {
+  });
+  user.provider = 'local'; // what is this?
+  user.salt = user.makeSalt();
+  user.hashedPassword = user.encryptPassword(password, user.salt);
+  console.log('New User (local) : { id: ' + user.id + ' username: ' + user.username + ' }');
+
+  user.save().error(function(error) {
     console.log("Unable to create user "+username+" because of error: "+error);
     res.status(401);
     return res.send(401);
   }).success(function() {
-    console.log("Created new user in DB: "+username);
+    console.log("Created new user in DB: "+username+" id="+user.id);
     req.login(user, function(err) {
       if (err) {
         console.log("error creating session: "+err);
