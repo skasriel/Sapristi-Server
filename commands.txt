@@ -34,6 +34,7 @@ git push origin master
 # set up heroku
 heroku login
 heroku create
+heroku addons:add mongolab
 
 # heroku
 git commit -a -m
