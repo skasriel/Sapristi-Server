@@ -13,6 +13,8 @@ cordova plugin rm org.apache.cordova.console --- remove unused plugins
 
 # curl
 curl --data "username=122123&mobileNumber=123&password=abc" http://localhost:5000/api/auth/register
+curl --data "confirmationCode=abced" http://localhost:5000/api/auth/confirmation-code
+curl --data "confirmationCode=abced" http://lit-woodland-6706.herokuapp.com/api/auth/confirmation-code
 
 
 # start mongo

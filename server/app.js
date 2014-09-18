@@ -42,8 +42,8 @@ passport.deserializeUser(User.deserializeUser());
 */
 
 var strategy = require('./strategy.js')
-passport.serializeUser(strategy.serializeUser);
-passport.deserializeUser(strategy.deserializeUser);
+//passport.serializeUser(strategy.serializeUser);
+//passport.deserializeUser(strategy.deserializeUser);
 
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
