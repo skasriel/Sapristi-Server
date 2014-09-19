@@ -33,18 +33,7 @@ app.use(cookieParser());
 app.use(session({ secret: 'changemeinprod' })); // session secret
 
 
-/** Configure Passport for Auth */
-/*var LocalStrategy    = require('passport-local').Strategy;
-var User = require('./models/user');
-passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
-*/
-
-var strategy = require('./strategy.js')
-//passport.serializeUser(strategy.serializeUser);
-//passport.deserializeUser(strategy.deserializeUser);
-
+var strategy = require('./strategy.js');
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session

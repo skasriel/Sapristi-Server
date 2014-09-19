@@ -15,27 +15,27 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   console.log("In Post /availability");
   var newAvailability = req.body.availability;
 
-  // Store to database
-  User.find({ where: { username: req.username }})
-    .error(function(err) {
-        console.log("Unable to get user "+username);
-        done(err);
-      })
-    .success(function(user) {
+  // Change availability in database
+  var user = req.user;
+  switch(newAvailability) {
+    case User.AvailabilityEnum.AVAILABLE:
+    case User.AvailabilityEnum.UNKNOWN:
+    case User.AvailabilityEnum.BUSY:
       user.availability = newAvailability;
-      user.save()
-        .error(function(error) {
-          console.log("Unable to change availability for "+username+" because of error: "+error);
-          res.status(401);
-          return res.send(401);
-        })
-        .success(function() {
-          // notify all contacts
-          // send push notification
-          res.status(200);
-          res.send(OK);
-        })
-    });
+      break;
+    default:
+      user.availability = User.AvailabilityEnum.UNKNOWN;
+      console.log("Unknown availability: "+newAvailability+" setting to UNKNOWN instead");
+  }
+  user.save().error(function(error) {
+    console.log("Unable to change availability for "+user.username+" because of error: "+error);
+    res.status(401);
+    return res.send(401);
+  })
+  .success(function() {
+    res.status(200);
+    res.send(OK);
+  });
 });
 
 module.exports = router;
