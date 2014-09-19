@@ -84,8 +84,21 @@ router.post('/confirmation-code',  isAuthenticated, function(req, res) {
 
   // Mark user as confirmed in database
   // Store to database
+  var user = req.user;
+  user.userState = User.UserStateEnum.CONFIRMED;
+  user.save().error(function(error) {
+    console.log("Unable to change state for "+user.username+" because of error: "+error);
+    res.status(401);
+    return res.send(401);
+  })
+  .success(function() {
+    res.status(200);
+    res.send(OK);
+  });
+  /*
+
   var username = req.username;
-  console.log("Looking up user: "+username);
+  console.log("Looking up user: "+username+"  "+req.user);
   User.find({ where: { username: username }})
     .error(function(err) {
         console.log("Unable to get user "+username);
@@ -104,10 +117,7 @@ router.post('/confirmation-code',  isAuthenticated, function(req, res) {
           res.status(200);
           res.send(OK);
         })
-    });
-
-  res.status(200);
-  res.send(OK);
+    });*/
 });
 
 
