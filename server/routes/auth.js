@@ -69,6 +69,7 @@ router.post('/register', function(req, res) {
     }
 
     user.userState = User.UserStateEnum.CREATED;
+    user.availability = User.AvailabilityEnum.AVAILABLE
     user.provider = 'local'; // what is this?
     user.salt = user.makeSalt();
     user.hashedPassword = user.encryptPassword(password, user.salt);

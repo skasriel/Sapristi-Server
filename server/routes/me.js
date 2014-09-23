@@ -228,6 +228,10 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
       if (userState != User.UserStateEnum.CONFIRMED) {
         continue; // only confirmed users have a meaningful state
       }
+      if (!availability) {
+        console.error("missing availability info for "+displayName);
+        availability = User.AvailabilityEnum.UNKNOWN;
+      }
       availabilityList.push({
         username: toUser, // the friend's normalized phone number
         availability: availability, // BUSY, UNKNOWN or AVAILABLE
@@ -236,7 +240,7 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
       console.log(req.user.username + " -> " + friend.toUser+": "+displayName+" "+availability+" "+connectionState+" @ "+updatedAt.toISOString());
     }
     res.status(200);
-    console.log("sending: "+JSON.stringify(availabilityList));
+    console.log("sending availability list: "+JSON.stringify(availabilityList));
     res.send(availabilityList);
     console.log("done sending availability matrix");
   });
