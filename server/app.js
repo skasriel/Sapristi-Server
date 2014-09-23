@@ -39,7 +39,7 @@ app.set('view engine', 'jade');
 app.use(favicon());
 app.use(logger('dev'));
 app.use(bodyParser.json({limit: '100mb'}));
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({limit: '100mb'}));
 app.use(cookieParser());
 
 app.use(session({ secret: 'changemeinprod' })); // session secret
