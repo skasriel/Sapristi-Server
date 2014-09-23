@@ -1,6 +1,9 @@
+console.log("starting user");
+
 var PassportLocalStrategy = require('passport-local').Strategy;
 var Sequelize = require('sequelize');
 var sequelize = require('../db.js').sequelize;
+var PhoneFormat = require('../PhoneFormat');
 
 var crypto = require('crypto');
 
@@ -9,8 +12,8 @@ var User = sequelize.define('User', {
   username:     { type: Sequelize.STRING, primaryKey: true},
 	hashedPassword: { type: Sequelize.STRING},
 	salt:         { type: Sequelize.STRING},
-  //password:     { type: Sequelize.STRING},
-  mobileNumber: { type: Sequelize.STRING},
+  mobileNumber: { type: Sequelize.STRING}, // e164 formatted number
+  rawMobileNumber: {type: Sequelize.STRING}, // number as entered in user's address book
   authToken:    { type: Sequelize.STRING},
   availability: { type: Sequelize.STRING}, //Sequelize.ENUM('AVAILABLE', 'UNKNOWN', 'BUSY')},
   birthday:     { type: Sequelize.DATE},
@@ -32,8 +35,17 @@ var User = sequelize.define('User', {
 	}
 }
 );
-//User.drop();
+
 User.sync();
+
+User.Country = {
+  US: 'US'
+}
+
+
+User.normalize = function(phoneNumber, referenceCountry) {
+  return PhoneFormat.formatE164(User.Country.US, phoneNumber); // Hack: not handling international phone numbers at all, need to fix...
+}
 
 User.UserStateEnum = {
   GHOST: 'GHOST',

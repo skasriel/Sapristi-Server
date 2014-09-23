@@ -1,3 +1,11 @@
+'use strict';
+
+var PhoneFormat = require('./PhoneFormat');
+console.log(PhoneFormat.formatE164("US", "4085060781"));
+console.log(PhoneFormat.countryForE164Number("00331462456726"));
+console.log(PhoneFormat.countryForE164Number("+33450544303"));
+
+
 var express = require('express');
 var path = require('path');
 var favicon = require('static-favicon');
@@ -6,6 +14,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session      = require('express-session');
 var flash    = require('connect-flash');
+
+var user = require('./models/user');
 
 var auth = require('./routes/auth');
 var me = require('./routes/me');
@@ -17,6 +27,8 @@ var app = express();
 
 var mongoose = require('mongoose');
 var Sequelize = require('sequelize');
+var sequelize = require('./db.js').sequelize;
+
 //var mongoStore = require('connect-mongo')(express); //doesn't seem to work with express4
 var passport = require('passport');
 
@@ -47,22 +59,22 @@ app.use('/api/contacts', contacts);
 app.use('/api/friends', friends);
 
 /// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+/*app.use(function(req, res, next) {
     var err = new Error('Not Found');
     err.status = 404;
     next(err);
+});*/
+
+var server = app.listen(5000, function() {
+    console.log('Listening on port %d', server.address().port);
 });
-
-var sequelize = require('./db.js').sequelize;
-
-
 
 
 /// error handlers
 
 // development error handler
 // will print stacktrace
-if (true) { //app.get('env') === 'development') {
+/*if (true) { //app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
         res.render('error', {
@@ -70,7 +82,8 @@ if (true) { //app.get('env') === 'development') {
             error: err
         });
     });
-}
+}*/
+
 /*
 // production error handler
 // no stacktraces leaked to user

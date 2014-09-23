@@ -64,7 +64,7 @@ create table s_phoneNumbers (username varchar(255) references s_user(username),
 SELECT current_database();
 
 select column_name, data_type, character_maximum_length
-from INFORMATION_SCHEMA.COLUMNS where table_name = 's_user'
+from INFORMATION_SCHEMA.COLUMNS where table_name = 'Users'
 
 \q
 

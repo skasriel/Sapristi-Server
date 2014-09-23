@@ -7,18 +7,6 @@ var Contact = require('../models/contact');
 var auth = require('./auth');
 
 
-/** Returns a mongoose promise that can be exec()
-*/
-/*app.getRoomByNameOrId = function(name) {
-  if ((typeof name == 'string' || name instanceof String) && name.charAt(0)=='@') {
-    console.log("Finding 1:1 room: "+name);
-    // this is a 1:1 room, which may not have been created yet since they are created upon the first message being sent
-    return Workroom.findOne({'name': name}); //name: name
-  } else {
-    return Workroom.findById(name);
-  }
-}*/
-
 function sendRegisteredUsersFromContactList(req, res, allPhoneNumbers) {
   //var allPhoneNumbers =
   User.find({mobileNumber: {"$in": allPhoneNumbers}}).exec(function(err, registeredNumbers) {

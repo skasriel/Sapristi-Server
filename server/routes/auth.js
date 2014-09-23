@@ -28,7 +28,8 @@ router.post('/login', passport.authenticate('local'), function(req, res) {
 
 router.get('/logout', function(req, res) {
     req.logout();
-    res.send(OK);
+    req.session.destroy();
+    setTimeout(function() {res.status(200); res.send(OK);}, 500);
 });
 
 
@@ -36,42 +37,68 @@ router.get('/logout', function(req, res) {
 // User registration
 router.post('/register', function(req, res) {
   console.log("In Post /register");
-  var username = req.body.username;
+
+  req.logout();
+
+  var rawMobileNumber = req.body.username;
   var password = req.body.password;
-  var mobileNumber = req.body.mobileNumber;
+  var normalizedNumber = User.normalize(rawMobileNumber, User.Country.US);
+  if (normalizedNumber == "" || normalizedNumber == null) {
+    // error normalizing to e164 format...
+    res.status(401);
+    console.errror("Unable to e164 on "+rawMobileNumber);
+    return res.send({error: "Invalid phone number: "+rawMobileNumber});
+  }
+  var username = normalizedNumber;
   var authToken = password;
 
+  // See if user already exists. If it's a GHOST user, then no problem, it's safe to change the state to CREATED
+  // If it's already a CREATED or CONFIRMED account, not totally sure what we should do here...
+  User.find({ where: { username: username }}).success(function(user) {
+    if (!user) {
+      user = User.build({
+          'username' : normalizedNumber,
+          'mobileNumber': normalizedNumber,
+          'authToken': authToken,
+          'rawMobileNumber': rawMobileNumber
+      });
+    } else {
+      user.mobileNumber = username;
+      user.authToken = authToken;
+      user.rawMobileNumber = rawMobileNumber;
+    }
 
-  var user = User.build({
-      'username' : req.body.username,
-      'mobileNumber': req.body.mobileNumber,
-      'authToken': authToken
-  });
-  user.provider = 'local'; // what is this?
-  user.salt = user.makeSalt();
-  user.hashedPassword = user.encryptPassword(password, user.salt);
-  console.log('New User (local) : { id: ' + user.id + ' username: ' + user.username + ' }');
+    user.userState = User.UserStateEnum.CREATED;
+    user.provider = 'local'; // what is this?
+    user.salt = user.makeSalt();
+    user.hashedPassword = user.encryptPassword(password, user.salt);
 
-  user.save().error(function(error) {
-    console.log("Unable to create user "+username+" because of error: "+error);
+    user.save().error(function(error) {
+      console.error("Unable to create user "+username+" because of error: "+error);
+      res.status(401);
+      return res.send(401);
+    }).success(function() {
+      console.log("Created new user: "+username);
+      req.login(user, function(err) {
+        if (err) {
+           console.error("error creating session: "+err);
+           res.status(401);
+           return res.send(401);
+        }
+        var results = {
+          "username": username,
+          "authToken": authToken
+        };
+        res.status(200);
+        res.send(results);
+      });
+    })
+  }).error(function(err) {
+    console.error("Error in looking up user "+username+" err="+err)
     res.status(401);
     return res.send(401);
-  }).success(function() {
-    console.log("Created new user in DB: "+username+" id="+user.id);
-    req.login(user, function(err) {
-      if (err) {
-         console.log("error creating session: "+err);
-         res.status(401);
-         return res.send(401);
-      }
-      var results = {
-        "username": username,
-        "authToken": authToken
-      };
-      res.status(200);
-      res.send(results);
-    });
   });
+
 });
 
 
