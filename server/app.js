@@ -15,7 +15,7 @@ var bodyParser = require('body-parser');
 var session      = require('express-session');
 var flash    = require('connect-flash');
 
-var user = require('./models/user');
+var User = require('./models/user');
 
 var auth = require('./routes/auth');
 var me = require('./routes/me');
@@ -68,6 +68,17 @@ app.use('/api/friends', friends);
 var server = app.listen(5000, function() {
     console.log('Listening on port %d', server.address().port);
 });
+
+
+User.find({username: "+14085060781"})
+.error(function(error) {
+  console.error("error retrieving contacts "+error);
+}).success(function(friend) {
+    var displayName = friend.displayName;
+    var updatedAt = new Date(friend.updatedAt);
+    console.log(displayName+" @ "+updatedAt);
+});
+
 
 
 /// error handlers

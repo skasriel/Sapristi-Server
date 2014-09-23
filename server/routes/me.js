@@ -198,7 +198,7 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
     for (i=0; i<friendList.length; i++) {
       var friend = friendList[i];
       var displayName = friend.displayName;
-      var updatedAt = friend.updatedAt;
+      var updatedAt = new Date(friend.updatedAt);
       var toUser = friend.toUser;
       var connectionState = friend.connectionState;
       var userState = friend.destination.userState;
@@ -212,9 +212,9 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
       availabilityList.push({
         username: toUser, // the friend's normalized phone number
         availability: availability, // BUSY, UNKNOWN or AVAILABLE
-        updatedAt: updatedAt // the time at which this user's availability was last changed
+        updatedAt: updatedAt.toISOString() // the time at which this user's availability was last changed
       });
-      console.log(req.user.username + " -> " + friend.toUser+": "+displayName+" "+availability+" "+connectionState);
+      console.log(req.user.username + " -> " + friend.toUser+": "+displayName+" "+availability+" "+connectionState+" @ "+updatedAt.toISOString());
     }
     res.status(200);
     res.send(availabilityList);
