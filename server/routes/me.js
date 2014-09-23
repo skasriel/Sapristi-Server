@@ -92,6 +92,12 @@ function uploadContact(context, callback) {
 
   contact.normalizedPhoneNumbers = [];
   contact.rawPhoneNumbers = [];
+
+  if (contact.phoneNumbers.length == 0) {
+    console.error("ERROR: " + contact.displayName + " has no phone numbers");
+    callback();
+    return;
+  }
   for (var i=0; i<contact.phoneNumbers.length; i++) {
       var normalized = User.normalize(contact.phoneNumbers[i], User.Country.US);
       if (normalized==null || normalized=="") {
@@ -101,6 +107,13 @@ function uploadContact(context, callback) {
         contact.rawPhoneNumbers.push(contact.phoneNumbers[i]);
       }
   }
+
+  if (contact.normalizedPhoneNumbers.length == 0) {
+    console.error("ERROR: " + contact.displayName + " has no normalized phone numbers");
+    callback();
+    return;
+  }
+
   //contact.phoneNumbers = null; // don't want to be using it anymore.
 
   var friend;
