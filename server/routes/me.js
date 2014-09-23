@@ -101,7 +101,7 @@ function uploadContact(context, callback) {
         contact.rawPhoneNumbers.push(contact.phoneNumbers[i]);
       }
   }
-  contact.phoneNumbers = null; // don't want to be using it anymore.
+  //contact.phoneNumbers = null; // don't want to be using it anymore.
 
   var friend;
   // find if one of the phoneNumbers matches a Sapristi user
@@ -114,7 +114,7 @@ function uploadContact(context, callback) {
   query += ")"
   User.find({ where: query })
     .error(function(error) {
-      console.error("error retrieving users "+error+" query = "+query);
+      console.error("error retrieving users "+error+" query = "+query+" normalized="+contact.normalizedPhoneNumbers+" raw="+contact.rawPhoneNumbers);
     }).success(function(friend) {
       if (friend) {
         // this contact is already a Sapristi user. So create a Contact if there isn't one already
