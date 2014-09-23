@@ -230,6 +230,7 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
       console.log(req.user.username + " -> " + friend.toUser+": "+displayName+" "+availability+" "+connectionState+" @ "+updatedAt.toISOString());
     }
     res.status(200);
+    console.log("sending: "+JSON.stringify(availabilityList));
     res.send(availabilityList);
     console.log("done sending availability matrix");
   });
