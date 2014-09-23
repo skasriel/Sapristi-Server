@@ -33,7 +33,7 @@ sequelize
      if (!!err) {
        console.error('An error occurred while creating the table:', err)
      } else {
-       console.log('It worked!')
+       console.log('Sequelize.sync() complete')
      }
   });
 
