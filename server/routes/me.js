@@ -105,7 +105,7 @@ function uploadContact(context, callback) {
       } else {
         if (normalized == user.username) {
           // don't upload the contact if it's the user herself (e.g. I have myself in my address book...)
-          println("Skipping self contact: "+contact);
+          console.log("Skipping self contact: "+contact);
           callback();
           return;
         }
