@@ -114,7 +114,7 @@ function uploadContact(context, callback) {
   query += ")"
   User.find({ where: query })
     .error(function(error) {
-      console.error("error retrieving users "+error);
+      console.error("error retrieving users "+error+" query = "+query);
     }).success(function(friend) {
       if (friend) {
         // this contact is already a Sapristi user. So create a Contact if there isn't one already
