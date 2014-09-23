@@ -38,7 +38,7 @@ app.set('view engine', 'jade');
 
 app.use(favicon());
 app.use(logger('dev'));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: 50mb}));
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 
@@ -68,18 +68,6 @@ app.use('/api/friends', friends);
 var server = app.listen(5000, function() {
     console.log('Listening on port %d', server.address().port);
 });
-
-
-User.find({username: "+14085060781"})
-.error(function(error) {
-  console.error("error retrieving contacts "+error);
-}).success(function(friend) {
-    var displayName = friend.displayName;
-    var updatedAt = new Date(friend.updatedAt);
-    console.log(displayName+" @ "+updatedAt);
-});
-
-
 
 /// error handlers
 
