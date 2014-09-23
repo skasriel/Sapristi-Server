@@ -103,6 +103,12 @@ function uploadContact(context, callback) {
       if (normalized==null || normalized=="") {
         console.log("Can't normalize friend number, ignoring: "+contact.phoneNumbers[i]);
       } else {
+        if (normalized == user.username) {
+          // don't upload the contact if it's the user herself (e.g. I have myself in my address book...)
+          println("Skipping self contact: "+contact);
+          callback();
+          return;
+        }
         contact.normalizedPhoneNumbers.push(normalized);
         contact.rawPhoneNumbers.push(contact.phoneNumbers[i]);
       }

@@ -1,10 +1,6 @@
 'use strict';
 
 var PhoneFormat = require('./PhoneFormat');
-console.log(PhoneFormat.formatE164("US", "4085060781"));
-console.log(PhoneFormat.countryForE164Number("00331462456726"));
-console.log(PhoneFormat.countryForE164Number("+33450544303"));
-
 
 var express = require('express');
 var path = require('path');
