@@ -47,7 +47,7 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   })
   .success(function() {
     //sendPushNotifications(user);     // now notify all relevant users
-    redisClient.set("user:"+user.username+":availability", user.availability, redis.print); // keep the redis cache in sync
+    redis.client.set("user:"+user.username+":availability", user.availability, redis.print); // keep the redis cache in sync
     res.status(200);
     res.send(auth.OK);
   });
