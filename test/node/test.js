@@ -3,7 +3,7 @@ var request = require('superagent') //require('../../')
   , should = require('should');
 
 
-var baseURL = 'http://localhost:5000'; // 'http://lit-woodland-6706.herokuapp.com'; // 
+var baseURL = 'http://lit-woodland-6706.herokuapp.com'; //  'http://localhost:5000'; // 
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;

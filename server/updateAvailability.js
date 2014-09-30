@@ -2,7 +2,9 @@
 
 var Sequelize = require('sequelize');
 var sequelize = require('./db.js').sequelize;
-var redis = require("redis"), redisClient = redis.createClient();
+
+
+var redis = require('./redis');
 
 var User = require('./models/user');
 var TimeSlot = require('./models/timeslots');

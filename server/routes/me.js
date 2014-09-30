@@ -16,8 +16,7 @@ var auth = require('./auth');
 
 var apn = require('apn');
 
-var redis = require("redis"), redisClient = redis.createClient();
-
+var redis = require('../redis');
 
 /**
  * Toggle my availability busy / unknown / available
