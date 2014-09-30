@@ -28,7 +28,7 @@ Contact.belongsTo(User, {foreignKey: 'toUser', as:'destination'});
 Contact.sync();
 
 sequelize
-  .sync({ force: true })
+  .sync(/*{ force: true }*/)
   .complete(function(err) {
      if (!!err) {
        console.error('An error occurred while creating the table:', err)

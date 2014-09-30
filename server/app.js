@@ -15,13 +15,13 @@ var User = require('./models/user');
 
 var auth = require('./routes/auth');
 var me = require('./routes/me');
-var friends = require('./routes/friends');
-var contacts = require('./routes/contacts');
+var settings = require('./routes/settings');
+//var friends = require('./routes/friends');
+//var contacts = require('./routes/contacts');
 
 
 var app = express();
 
-var mongoose = require('mongoose');
 var Sequelize = require('sequelize');
 var sequelize = require('./db.js').sequelize;
 
@@ -51,8 +51,10 @@ app.use(express.static(path.join(__dirname, '../www')));
 
 app.use('/api/auth', auth);
 app.use('/api/me', me);
-app.use('/api/contacts', contacts);
-app.use('/api/friends', friends);
+app.use('/api/settings', settings);
+
+//app.use('/api/contacts', contacts);
+//app.use('/api/friends', friends);
 
 /// catch 404 and forward to error handler
 /*app.use(function(req, res, next) {

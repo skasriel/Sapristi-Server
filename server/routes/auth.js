@@ -8,6 +8,7 @@ var passport = require('passport'),
     User = require('../models/user');
 
 var OK = {"status": "ok"};
+var ERROR={"status": "error"};
 
 // Shared function to verify that the user is logged in before attempting to respond to GET/POST
 function isAuthenticated(req,res,next) {

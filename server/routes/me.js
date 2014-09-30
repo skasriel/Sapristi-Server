@@ -14,14 +14,23 @@ var passport = require('passport'),
 
 var auth = require('./auth');
 
+var apn = require('apn');
 
-// Toggle my availability busy / unknown / available
+var redis = require("redis"), redisClient = redis.createClient();
+
+
+/**
+ * Toggle my availability busy / unknown / available
+ * And notify those who have friended me about this update
+ */
 router.post('/availability',  auth.isAuthenticated, function(req, res) {
   console.log("In Post /availability");
   var newAvailability = req.body.availability;
 
   // Change availability in database
   var user = req.user;
+
+  //setUserAvailability(user, newAvailability)
   switch(newAvailability) {
     case User.AvailabilityEnum.AVAILABLE:
     case User.AvailabilityEnum.UNKNOWN:
@@ -38,10 +47,45 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
     return res.send(401);
   })
   .success(function() {
+    //sendPushNotifications(user);     // now notify all relevant users
+    redisClient.set("user:"+user.username+":availability", user.availability, redis.print); // keep the redis cache in sync
     res.status(200);
     res.send(auth.OK);
   });
 });
+
+function sendPushNotifications(user) {
+  Contact.findAll({ where: {toUser: user.username}, include: [{model: User, as: 'origin'}] })
+  .error(function(error) {
+    console.error("error finding users to send push notifications for "+user.username+": "+error);
+    return;
+  }).success(function(reverseFriendList) {
+    for (i=0; i<reverseFriendList.length; i++) {
+      var contact = reverseFriendList[i];
+      var connectionState = contact.connectionState;
+      /*if (connectionState != Contact.StateEnum.CONNECTED) {
+      // this isn't the correct logic. I really need to look up the other way: did I send a similar invitation
+        continue; // you can only see friends who have accepted your invitation
+      }*/
+      var fromUser = contact.origin;
+      var displayName = contact.displayName; // this is my name, as stored in  my friend's address book
+      var deviceToken = fromUser.deviceToken;
+      if (! deviceToken) {
+        console.error("No token for user "+friend.displayName);
+        return;
+      }
+
+      var myDevice = new apn.Device(deviceToken);
+      var note = new apn.Notification();
+      note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
+      note.badge = 3;
+      note.sound = "ping.aiff";
+      note.alert = "\uD83D\uDCE7 \u2709 Your friend "+user.username+" changed availability to "+user.availability;
+      note.payload = {'messageFrom': 'Stephane'};
+      apnConnection.pushNotification(note, myDevice);
+    }
+  });
+}
 
 function findOrCreateConnection(user, friend, connectionState, displayName, callback) {
   console.log("FindOrCreateConnection: "+user.username+" -> "+ friend.username);
@@ -186,6 +230,8 @@ router.post('/contacts',  auth.isAuthenticated, function(req, res) {
     });
   }
 });
+
+
 
 /**
  * Returns the availability of this user's friends who are also Sapristi users
