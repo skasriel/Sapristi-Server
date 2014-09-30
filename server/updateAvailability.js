@@ -69,7 +69,7 @@ function decrementAndExitIfDone() {
 
 function setUserAvailability(username, newAvailability) {
   // check whether current availability (in redis cache) is the same as new
-  var currentAvailability = redisClient.get(getRedisKey(username));
+  var currentAvailability = redis.client.get(getRedisKey(username));
   if (newAvailability == currentAvailability) {
     console.log("User availability hasn't changed, skipping: "+username);
     decrementAndExitIfDone();
@@ -88,7 +88,7 @@ function setUserAvailability(username, newAvailability) {
       return;
     }).success(function() {
       //sendPushNotifications(user);     // now notify all relevant users
-      redisClient.set(getRedisKey(user.username), user.availability, redis.print); // keep the redis cache in sync
+      redis.client.set(getRedisKey(user.username), user.availability, redis.print); // keep the redis cache in sync
       decrementAndExitIfDone();
       return;
     });    
