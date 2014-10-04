@@ -24,7 +24,7 @@ var app = express();
 
 var Sequelize = require('sequelize');
 var sequelize = require('./db.js').sequelize;
-var redis = require('../redis');
+var redis = require('./redis');
 
 var passport = require('passport');
 
