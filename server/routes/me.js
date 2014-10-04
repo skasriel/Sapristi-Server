@@ -18,6 +18,36 @@ var apn = require('apn');
 
 var redis = require('../redis');
 
+
+function getRedisKey(username) {
+  return "user:"+username+":availability";
+}
+
+
+/** 
+* Retrieve my availability
+*/
+router.get('/availability', auth.isAuthenticated, function(req, res) {
+  var user = req.user;
+  var username = user.username;
+
+  // the redis look up is actually useless at this stage given that Passport currently always looks up the user from the DB for each request...
+  redis.client.get(getRedisKey(username), function(err, availability) {
+    if (!err & availability) {
+      sendAvailability(req, res, availability);
+      return;
+    }
+    sendAvailability(req, res, user.availability);
+  });
+});
+
+function sendAvailability(req, res, availability) {
+  res.status(200);
+  var response = {"availability": availability};
+  console.log("Availability: "+availability);
+  res.send(response);
+}
+
 /**
  * Toggle my availability busy / unknown / available
  * And notify those who have friended me about this update
@@ -29,7 +59,6 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   // Change availability in database
   var user = req.user;
 
-  //setUserAvailability(user, newAvailability)
   switch(newAvailability) {
     case User.AvailabilityEnum.AVAILABLE:
     case User.AvailabilityEnum.UNKNOWN:
@@ -52,6 +81,7 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
     res.send(auth.OK);
   });
 });
+
 
 function sendPushNotifications(user) {
   Contact.findAll({ where: {toUser: user.username}, include: [{model: User, as: 'origin'}] })

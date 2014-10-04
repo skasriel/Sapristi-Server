@@ -3,7 +3,7 @@ var request = require('superagent') //require('../../')
   , should = require('should');
 
 
-var baseURL = 'http://lit-woodland-6706.herokuapp.com'; //  'http://localhost:5000'; // 
+var baseURL = 'http://localhost:5000'; // 'http://lit-woodland-6706.herokuapp.com'; //  
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -178,11 +178,11 @@ describe('availability', function() {
 
 describe('settings', function() {
   it('Update timeslots', function(done) {
-    //var params='date[0][1]=11:45 AM&date[0][0]=07:30 AM&date[0][3]=06:00 PM&date[0][2]=02:15 PM&date[1][0]=10:00 AM&date[1][1]=12:30 PM&date[1][2]=03:30 PM&date[1][3]=11:00 PM';
-    var params='date[0][0]=07:30 AM&date[0][1]=11:45 AM&date[0][2]=02:15 PM&date[0][3]=11:30 PM&date[1][0]=10:00 AM&date[1][1]=12:30 PM&date[1][2]=03:30 PM&date[1][3]=11:00 PM';
+    //var params='date[0][0]=07:30 AM&date[0][1]=11:45 AM&date[0][2]=02:15 PM&date[0][3]=11:30 PM&date[1][0]=10:00 AM&date[1][1]=12:30 PM&date[1][2]=03:30 PM&date[1][3]=11:00 PM';
+    var json='[{"source":"USER_TIMESLOTS","recurrence":"12345","endTime":"2000-01-01T19:45:00.000Z","availability":"AVAILABLE","startTime":"2000-01-01T16:45:00.000Z"},{"source":"USER_TIMESLOTS","recurrence":"12345","endTime":"2000-01-02T05:00:00.000Z","availability":"AVAILABLE","startTime":"2000-01-01T22:15:00.000Z"},{"source":"USER_TIMESLOTS","recurrence":"60","endTime":"2000-01-01T20:30:00.000Z","availability":"AVAILABLE","startTime":"2000-01-01T18:00:00.000Z"},{"source":"USER_TIMESLOTS","recurrence":"60","endTime":"2000-01-02T07:00:00.000Z","availability":"AVAILABLE","startTime":"2000-01-01T23:30:00.000Z"}]';
     agent1
       .post(baseURL+'/api/settings/timeslots')
-      .send(params) //.send({json: json})
+      .send({json: json})
       .end(function(err, res) {
       should.not.exist(err);
       res.should.have.status(200);

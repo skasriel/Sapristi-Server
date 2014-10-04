@@ -82,6 +82,8 @@ router.post('/register', function(req, res) {
     }).success(function() {
       console.log("Created new user: "+username);
       req.login(user, function(err) {
+        console.log("redis session upgrade for "+username);
+        if (req.session.upgrade) req.session.upgrade(username); // redis session
         if (err) {
            console.error("error creating session: "+err);
            res.status(401);

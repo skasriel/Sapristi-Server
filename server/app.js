@@ -2,6 +2,7 @@
 
 var PhoneFormat = require('./PhoneFormat');
 
+/** Express settings */
 var express = require('express');
 var path = require('path');
 var favicon = require('static-favicon');
@@ -9,15 +10,14 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session      = require('express-session');
+var RedisStore = require('connect-redis')(session);
 var flash    = require('connect-flash');
 
-var User = require('./models/user');
 
+var User = require('./models/user');
 var auth = require('./routes/auth');
 var me = require('./routes/me');
 var settings = require('./routes/settings');
-//var friends = require('./routes/friends');
-//var contacts = require('./routes/contacts');
 
 
 var app = express();
@@ -25,7 +25,6 @@ var app = express();
 var Sequelize = require('sequelize');
 var sequelize = require('./db.js').sequelize;
 
-//var mongoStore = require('connect-mongo')(express); //doesn't seem to work with express4
 var passport = require('passport');
 
 // view engine setup
@@ -38,7 +37,30 @@ app.use(bodyParser.json({limit: '100mb'}));
 app.use(bodyParser.urlencoded({limit: '100mb'}));
 app.use(cookieParser());
 
-app.use(session({ secret: 'changemeinprod' })); // session secret
+var redisOptions = {} /*{host: 'localhost',
+    port: 6379,
+    db: 2,
+    pass: 'RedisPASS'};*/
+app.use(session({ store: new RedisStore(redisOptions), secret: 'klj2l34lkjslkjrwe2344rsx' }))
+
+//app.use( ConnectRedisSessions( { app: "sapristi" } ) );
+
+// listen for requests
+/*app.use( function( req, res ){
+    if( req.query.login ){
+        // upgrade a session to a redis session by a user id
+        console.log("Upgrade session due to login");
+        req.session.upgrade( req.query.user_id );
+    }
+    if( req.session.id && req.query.logout ){
+        // kill the active session
+        console.log("Destroy session due to logout");
+        req.session.destroy();
+    }
+    res.end( "Hello express redis sessions" );
+});*/
+
+//app.use(session({ secret: 'changemeinprod' })); // session secret
 
 
 var strategy = require('./strategy.js');
@@ -53,8 +75,6 @@ app.use('/api/auth', auth);
 app.use('/api/me', me);
 app.use('/api/settings', settings);
 
-//app.use('/api/contacts', contacts);
-//app.use('/api/friends', friends);
 
 /// catch 404 and forward to error handler
 /*app.use(function(req, res, next) {

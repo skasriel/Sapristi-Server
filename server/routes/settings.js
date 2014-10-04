@@ -18,32 +18,35 @@ var apn = require('apn');
  * Save my timeslots (times during which the server should show me as available to my frineds)
  */
 router.post('/timeslots',  auth.isAuthenticated, function(req, res) {
-  console.log("In Post /timeslots "+req.body.date+" username: "+req.user.username);
-  var dates = req.body.date;
-  TimeSlot.destroy({username: req.user.username})
+  console.log("In Post /timeslots. username: "+req.user.username+" json="+req.body.json);
+  var user = req.user;  // sequelize object
+  var username = user.username;
+  var timeslots = JSON.parse(req.body.json);
+  console.log("Num timeslots: "+timeslots.length);
+
+  TimeSlot.destroy({username: username, source: "USER_TIMESLOTS"})
   .error(function(error) {
-    console.error("Unable to delete timeslots for "+req.user.username);
+    console.error("Unable to delete timeslots for "+username);
   }).success(function(numDestroyed) {
     var numCompleted=0;
-    for (var section=0; section<2; section++) {
-      var dayType = (section==0) ? TimeSlot.DayTypeEnum.WEEKDAY : TimeSlot.DayTypeEnum.WEEKEND;
-      for (var row=0; row<2; row++) {
-        TimeSlot.build({username: req.user.username, dayType: dayType, startTime: dates[section][2*row], endTime: dates[section][2*row+1]})
-          .save()
-          .success(function(timeslot) {
-            console.log("successfully created: "+JSON.stringify(timeslot));
-            numCompleted++;
-            if (numCompleted==4) {
-              res.status(200);
-              res.send(auth.OK);
-            };
-          }).error(function(error) {
-            console.error("Unable to create timeslot: "+req.user.username+","+dayType+","+dates[section][2*row]+","+dates[section][2*row+1]);
-            res.status(500);
-            res.send(auth.ERROR);
-          });
+    for (var i=0; i<timeslots.length; i++) {
+      var timeslot = timeslots[i];
+      TimeSlot.build({username: username, startTime: timeslot.startTime, endTime: timeslot.endTime, 
+        availability: timeslot.availability, recurrence: timeslot.recurrence, source: timeslot.source})
+        .save()
+        .success(function(timeslot) {
+          numCompleted++;
+          console.log("successfully created #"+numCompleted+"/"+timeslots.length+": "+JSON.stringify(timeslot));
+          if (numCompleted==timeslots.length) {
+            res.status(200);
+            res.send(auth.OK);
+          };
+        }).error(function(error) {
+          console.error("Unable to create timeslot: "+req.user.username+","+req.body.json);
+          res.status(500);
+          res.send(auth.ERROR);
+        });
       }
-    }
   });
 });
 
