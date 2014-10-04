@@ -24,6 +24,7 @@ var app = express();
 
 var Sequelize = require('sequelize');
 var sequelize = require('./db.js').sequelize;
+var redis = require('../redis');
 
 var passport = require('passport');
 
@@ -37,7 +38,11 @@ app.use(bodyParser.json({limit: '100mb'}));
 app.use(bodyParser.urlencoded({limit: '100mb'}));
 app.use(cookieParser());
 
-var redisOptions = {} /*{host: 'localhost',
+var redisOptions = {};
+if (process.env.REDISTOGO_URL) 
+    redisOptions = {url: process.env.REDISTOGO_URL};
+
+ /*{host: 'localhost',
     port: 6379,
     db: 2,
     pass: 'RedisPASS'};*/
