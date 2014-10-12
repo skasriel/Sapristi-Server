@@ -21,7 +21,7 @@ describe('Set up Kate Bell', function() {
       .end(function(err, res) {
         should.not.exist(err);
         res.should.have.status(200);
-        //should.exist(res.headers['set-cookie']);
+        should.exist(res.headers['set-cookie']);
         done();
       });
   });
@@ -36,7 +36,50 @@ describe('Set up Kate Bell', function() {
       });
   });
 
+
   it('Update Kate Bell availability', function(done) {
+    var params = "availability=BUSY";
+    agent1.post(baseURL+'/api/me/availability')
+    .send(params)
+    .end(function(err, res) {
+      should.not.exist(err);
+      res.should.have.status(200);
+      done();
+    })
+  });
+
+  it('Verifying Kate availability', function(done) {
+    agent1.get(baseURL+'/api/me/availability')
+    .end(function(err, res) {
+      should.not.exist(err);
+      res.should.have.status(200);
+      res.text.should.include('BUSY');
+      done();
+    })
+  });
+
+  it('Update Kate Bell availability', function(done) {
+    var params = "availability=UNKNOWN";
+    agent1.post(baseURL+'/api/me/availability')
+    .send(params)
+    .end(function(err, res) {
+      should.not.exist(err);
+      res.should.have.status(200);
+      done();
+    })
+  });
+
+  it('Verifying Kate availability', function(done) {
+    agent1.get(baseURL+'/api/me/availability')
+    .end(function(err, res) {
+      should.not.exist(err);
+      res.should.have.status(200);
+      res.text.should.include('UNKNOWN');
+      done();
+    })
+  });
+
+    it('Update Kate Bell availability', function(done) {
     var params = "availability=AVAILABLE";
     agent1.post(baseURL+'/api/me/availability')
     .send(params)
@@ -46,6 +89,17 @@ describe('Set up Kate Bell', function() {
       done();
     })
   });
+
+  it('Verifying Kate availability', function(done) {
+    agent1.get(baseURL+'/api/me/availability')
+    .end(function(err, res) {
+      should.not.exist(err);
+      res.should.have.status(200);
+      res.text.should.include('AVAILABLE');
+      done();
+    })
+  });
+
 
   it('Log out Kate Bell', function(done) {
     agent1.get(baseURL+'/api/auth/logout')

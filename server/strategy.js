@@ -10,8 +10,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(username, done) {
-  console.log("deserialize: "+username);
-  console.log("redis session upgrade for "+username);
+  //console.log("deserialize: "+username);
   //if (req.session.upgrade) req.session.upgrade(username); // redis session
   User.find({where: {username: username}}).success(function(user){
     //console.log('Session: { username: ' + user.username + ', username: ' + user.username + ' }');
