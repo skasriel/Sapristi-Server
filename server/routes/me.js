@@ -53,11 +53,10 @@ function sendAvailability(req, res, availability) {
  * And notify those who have friended me about this update
  */
 router.post('/availability',  auth.isAuthenticated, function(req, res) {
-  console.log("In Post /availability");
   var newAvailability = req.body.availability;
-
-  // Change availability in database
+  var reason = req.body.reason;
   var user = req.user;
+  console.log("Updating availability for "+req.user.username+" to "+newAvailability);
 
   switch(newAvailability) {
     case User.AvailabilityEnum.AVAILABLE:
@@ -69,16 +68,25 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
       user.availability = User.AvailabilityEnum.UNKNOWN;
       console.log("Unknown availability: "+newAvailability+" setting to UNKNOWN instead");
   }
+
+  // Change availability in database
   user.save().error(function(error) {
     console.log("Unable to change availability for "+user.username+" because of error: "+error);
     res.status(401);
     return res.send(401);
   })
   .success(function() {
-    //sendPushNotifications(user);     // now notify all relevant users
-    redis.client.set("user:"+user.username+":availability", user.availability, redis.print); // keep the redis cache in sync
     res.status(200);
-    res.send(auth.OK);
+    //TODO: sendPushNotifications(user);     // now notify all relevant users
+    redis.client.set("user:"+user.username+":availability", user.availability, redis.print); // keep the redis cache in sync
+    //TODO: if the new availability sent by client requires us to compute the availability (e.g. user stopped driving), then do so now...
+    var finalAvailability = newAvailability
+    var finalReason = reason
+    var response = {
+        "availability": finalAvailability,
+        "reason": finalReason
+      };
+    res.send(response);
   });
 });
 

@@ -10,6 +10,8 @@ var redis = require('./redis');
 var User = require('./models/user');
 var TimeSlot = require('./models/timeslots');
 
+var NotificationManager = require('./NotificationManager');
+
 var numToComplete = 0;
 
 function run() {
@@ -75,7 +77,11 @@ function run() {
 
     for (var username in userAvailabilities) {
       console.log("Setting availability for "+username+" to "+userAvailabilities[username]);
-      setAvailabilityQueue.push({username:username, availability:userAvailabilities[username]}, function(err) {
+      var availability = {
+        username: username, 
+        availability: userAvailabilities[username]
+      }
+      setAvailabilityQueue.push(availability, function(err) {
         console.log("Finished processing user: "+username+" err="+err);
       });
     }
@@ -134,13 +140,26 @@ function setUserAvailability(context, callback) {
         callback();
         return;
       }).success(function() {
-        //sendPushNotifications(user);     // now notify all relevant users
+        sendPushNotifications(user);     // now notify all relevant users
         redis.client.set(getRedisKey(user.username), user.availability, redis.print); // keep the redis cache in sync
         callback();
         return;
       });    
     });
   });
+}
+
+function sendPushNotifications(user) {
+  // Notify the friends of the user that her status has changed
+  // For now, send a push notification to the user herself...
+  if (! user.apnToken) {
+    console.log("User hasn't subscribed to push notifications: "+user.username)
+    return
+  }
+
+  var payload = {'messageFrom': 'Sapristi'};
+  NotificationManager.sendNotification(user.apnToken, 1, "Test Notification", payload);
+
 }
 
 function toTime(amPMTime) {

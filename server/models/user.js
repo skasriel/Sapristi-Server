@@ -17,7 +17,8 @@ var User = sequelize.define('User', {
   authToken:    { type: Sequelize.STRING},
   availability: { type: Sequelize.STRING}, //Sequelize.ENUM('AVAILABLE', 'UNKNOWN', 'BUSY')},
   birthday:     { type: Sequelize.DATE},
-  userState:    { type: Sequelize.STRING} //type: Sequelize.ENUM('GHOST', 'CREATED', 'CONFIRMED')}
+  userState:    { type: Sequelize.STRING}, //type: Sequelize.ENUM('GHOST', 'CREATED', 'CONFIRMED')}
+  apnToken:     { type: Sequelize.STRING}, // opaque identifier sent by iOS devices for push notifications
 },
 {
 	instanceMethods: {

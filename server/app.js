@@ -19,6 +19,7 @@ var auth = require('./routes/auth');
 var me = require('./routes/me');
 var settings = require('./routes/settings');
 
+var NotificationManager = require('./NotificationManager');
 
 var app = express();
 
