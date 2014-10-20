@@ -140,7 +140,7 @@ function setUserAvailability(context, callback) {
         callback();
         return;
       }).success(function() {
-        sendPushNotifications(user);     // now notify all relevant users
+        NotificationManager.sendAvailabilityPushNotifications(user);     // now notify all relevant users
         redis.client.set(getRedisKey(user.username), user.availability, redis.print); // keep the redis cache in sync
         callback();
         return;
@@ -149,18 +149,6 @@ function setUserAvailability(context, callback) {
   });
 }
 
-function sendPushNotifications(user) {
-  // Notify the friends of the user that her status has changed
-  // For now, send a push notification to the user herself...
-  if (! user.apnToken) {
-    console.log("User hasn't subscribed to push notifications: "+user.username)
-    return
-  }
-
-  var payload = {'messageFrom': 'Sapristi'};
-  NotificationManager.sendNotification(user.apnToken, 1, "Test Notification", payload);
-
-}
 
 function toTime(amPMTime) {
   var components = amPMTime.split(/[\s,:]+/);

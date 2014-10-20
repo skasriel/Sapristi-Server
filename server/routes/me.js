@@ -11,6 +11,7 @@ var passport = require('passport'),
     Sequelize = require('sequelize'),
     User = require('../models/user'),
     Contact = require('../models/contact');
+var NotificationManager = require('../NotificationManager');
 
 var auth = require('./auth');
 
@@ -77,7 +78,7 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   })
   .success(function() {
     res.status(200);
-    //TODO: sendPushNotifications(user);     // now notify all relevant users
+    NotificationManager.sendAvailabilityPushNotifications(user);     // now notify all relevant users
     redis.client.set("user:"+user.username+":availability", user.availability, redis.print); // keep the redis cache in sync
     //TODO: if the new availability sent by client requires us to compute the availability (e.g. user stopped driving), then do so now...
     var finalAvailability = newAvailability
@@ -91,48 +92,16 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
 });
 
 
-function sendPushNotifications(user) {
-  Contact.findAll({ where: {toUser: user.username}, include: [{model: User, as: 'origin'}] })
-  .error(function(error) {
-    console.error("error finding users to send push notifications for "+user.username+": "+error);
-    return;
-  }).success(function(reverseFriendList) {
-    for (i=0; i<reverseFriendList.length; i++) {
-      var contact = reverseFriendList[i];
-      var connectionState = contact.connectionState;
-      /*if (connectionState != Contact.StateEnum.CONNECTED) {
-      // this isn't the correct logic. I really need to look up the other way: did I send a similar invitation
-        continue; // you can only see friends who have accepted your invitation
-      }*/
-      var fromUser = contact.origin;
-      var displayName = contact.displayName; // this is my name, as stored in  my friend's address book
-      var deviceToken = fromUser.deviceToken;
-      if (! deviceToken) {
-        console.error("No token for user "+friend.displayName);
-        return;
-      }
 
-      var myDevice = new apn.Device(deviceToken);
-      var note = new apn.Notification();
-      note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
-      note.badge = 3;
-      note.sound = "ping.aiff";
-      note.alert = "\uD83D\uDCE7 \u2709 Your friend "+user.username+" changed availability to "+user.availability;
-      note.payload = {'messageFrom': 'Stephane'};
-      apnConnection.pushNotification(note, myDevice);
-    }
-  });
-}
 
-function findOrCreateConnection(user, friend, connectionState, displayName, callback) {
+function findOrCreateConnection(user, friend, connectionState, displayName, desiredCallFrequency, callback) {
   console.log("FindOrCreateConnection: "+user.username+" -> "+ friend.username);
   var query = "\"fromUser\"='" + user.username + "' AND \"toUser\"='"+ friend.username +"'";
   Contact.findOrCreate(
     {fromUser: user.username, toUser: friend.username},
-  //{query /*Sequelize.and({fromUser: user.username}, {toUser: friend.username })*/},
-    {fromUser: user.username, toUser: friend.username, connectionState: connectionState, displayName: displayName}
+    {fromUser: user.username, toUser: friend.username, connectionState: connectionState, displayName: displayName, desiredCallFrequency: desiredCallFrequency}
   ).error(function(error) {
-    console.log("error creating/finding connection entry "+user.username+" -> "+friend.username);
+    console.log("error creating/finding connection entry "+user.username+" -> "+friend.username+" err="+error);
   }).success(function(connection, created) {
     console.log("created connection: "+user.username+ " -> "+friend.username+" as "+connectionState);
     console.log("Created = "+created+" ; Values = "+connection.values);
@@ -147,7 +116,7 @@ function findOrCreateConnection(user, friend, connectionState, displayName, call
 * Then we call findOrCreateConnection(), where we do the same on the Contact entry
 */
 function createUserAndConnection(context, innerCallback) {
-  var user = context.user, phoneNumber = context.phoneNumber, displayName = context.displayName;
+  var user = context.user, phoneNumber = context.phoneNumber, displayName = context.displayName, desiredCallFrequency= context.desiredCallFrequency;
   // phoneNumber isn't a confirmed Sapristi user yet (but may be a ghost or created user), create a Ghost user now
   User.findOrCreate(
     {username: phoneNumber},
@@ -156,7 +125,7 @@ function createUserAndConnection(context, innerCallback) {
     console.error("Cannot findOrCreate "+phoneNumber+" err="+error);
   }).success(function(friend, created) {
     console.log("FindOrCreate success: "+friend.username+" created? = "+created);
-    findOrCreateConnection(user, friend, Contact.StateEnum.INVITED, displayName, innerCallback);
+    findOrCreateConnection(user, friend, Contact.StateEnum.INVITED, displayName, desiredCallFrequency, innerCallback);
   });
 }
 
@@ -164,12 +133,13 @@ function createUserAndConnection(context, innerCallback) {
  * For a single contact of a user, look up whether one of the associated phone numbers is already an existing user
  * If so, create a Contact entry between the two users
  * Otherwise, create GHOST users for each of the phone numbers, and a Contact entry between the user and each of the GHOSTs
+ * context contains context.user which is a User model object and context.contact which is a JSON object received from the client 
  */
 function uploadContact(context, callback) {
   var user = context.user, contact = context.contact;
   var displayName = contact.displayName;
-  var emailAddresses = contact.emailAddresses;
-  console.log("\n\n\nContact: "+displayName);
+  var desiredCallFrequency = contact.desiredCallFrequency; 
+  console.log("\n\n\nuploadContact: "+displayName);
 
   contact.normalizedPhoneNumbers = [];
   contact.rawPhoneNumbers = [];
@@ -180,7 +150,7 @@ function uploadContact(context, callback) {
     return;
   }
   for (var i=0; i<contact.phoneNumbers.length; i++) {
-      var normalized = User.normalize(contact.phoneNumbers[i], User.Country.US);
+      var normalized = User.normalize(contact.phoneNumbers[i], User.Country.US); // TODO: this assumes the user is in the US and interprets all local numbers as US numbers...
       if (normalized==null || normalized=="") {
         console.log("Can't normalize friend number, ignoring: "+contact.phoneNumbers[i]);
       } else {
@@ -201,8 +171,6 @@ function uploadContact(context, callback) {
     return;
   }
 
-  //contact.phoneNumbers = null; // don't want to be using it anymore.
-
   var friend;
   // find if one of the phoneNumbers matches a Sapristi user
   // create query manually because I can't see how to do a "select ... IN [array]" with sequelize
@@ -221,7 +189,7 @@ function uploadContact(context, callback) {
         // and leave as-is if there is one since it may be already in a CONNECTED state and we don't want to reset it to INVITED)
         // Not that it makes a difference for now since we're virally considering INVITED to be the same as CONNECTED
         console.log("Found a user for contact #"+i+" with username "+friend.username);
-        findOrCreateConnection(user, friend, Contact.StateEnum.INVITED, displayName, callback);
+        findOrCreateConnection(user, friend, Contact.StateEnum.INVITED, displayName, desiredCallFrequency, callback);
       } else {
         var ghostCreationQueue = async.queue(createUserAndConnection, 1);
         ghostCreationQueue.drain = function() {

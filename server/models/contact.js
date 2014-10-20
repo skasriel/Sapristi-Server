@@ -5,10 +5,11 @@ var sequelize = require('../db.js').sequelize;
 var User = require('./user');
 
 var Contact = sequelize.define('Contact', {
-  fromUser:         { type: Sequelize.STRING, references: User, referencesKey: "username"},
-  toUser:           { type: Sequelize.STRING, references: User, referencesKey: "username"},
-  connectionState:  { type: Sequelize.STRING}, //Sequelize.ENUM('INVITED', 'CONNECTED')
-  displayName:      { type: Sequelize.STRING}
+  fromUser:         { type: Sequelize.STRING, references: User, referencesKey: "username", allowNull: false},
+  toUser:           { type: Sequelize.STRING, references: User, referencesKey: "username", allowNull: false},
+  connectionState:  { type: Sequelize.STRING, allowNull: false}, //Sequelize.ENUM('INVITED', 'CONNECTED')
+  displayName:      { type: Sequelize.STRING, allowNull: false},
+  desiredCallFrequency: {type: Sequelize.INTEGER, defaultValue: 0}
 });
 
 //Contact.drop();
