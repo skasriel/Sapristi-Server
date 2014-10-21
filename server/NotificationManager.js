@@ -3,7 +3,10 @@ var Contact = require('./models/contact');
 var User = require('./models/user');
 
 var options = {
-	"pfx": "Sapristi.p12", 
+	"cert": "SapristiDevCert.pem",
+	"key": "SapristiDevKey.pem",
+	"passphrase": "320paris",
+	//"pfx": "Sapristi.p12", 
 	"production": false 
 };
 var apnConnection = new apn.Connection(options);
