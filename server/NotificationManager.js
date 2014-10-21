@@ -58,7 +58,7 @@ var self = module.exports = {
 		note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
 		note.badge = badge; // 1
 		note.sound = "ping.aiff";
-		note.alert = "\uD83D\uDCE7 \u2709 "+title;
+		note.alert = title // "\uD83D\uDCE7 \u2709 "+title;
 		note.payload = payload; //{'messageFrom': 'Sapristi'};
 
 		apnConnection.pushNotification(note, device);
@@ -87,10 +87,17 @@ var self = module.exports = {
 	        return;
 	      }
 
-	      var badge = 3;
-	      var title = "Your friend "+displayName+" changed availability to "+user.availability;
-	      var payload = {'messageFrom': 'Sapristi'};
-	      self.sendNotification(deviceToken, badge, title, payload);
+	      var badge = 0;
+	      if (user.availability == User.AvailabilityEnum.AVAILABLE) {
+		      var title = displayName+" is available for a call";
+		      var payload = {
+		      	"category": "AVAILABILITY_CATEGORY",
+		      	"messageFrom": "Sapristi"
+		      };
+		      self.sendNotification(deviceToken, badge, title, payload);
+	      } else {
+	      	// Don't push anything out
+	      }
 	    }
 	  });
 	}
