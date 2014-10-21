@@ -97,6 +97,7 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
  */
 router.post('/apn-token',  auth.isAuthenticated, function(req, res) {
   var apnToken = req.body.apnToken;
+  var user = req.user;
   console.log("Updating APN Token for "+req.user.username+" to "+apnToken);
   user.apnToken = apnToken;
 
