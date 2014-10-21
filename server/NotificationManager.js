@@ -87,7 +87,7 @@ var self = module.exports = {
 	      self.sendNotification(deviceToken, badge, title, payload);
 	    }
 	  });
-	};
+	}
 };
 
 
