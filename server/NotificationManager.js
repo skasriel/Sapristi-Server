@@ -2,7 +2,10 @@ var apn = require('apn');
 var Contact = require('./models/contact');
 var User = require('./models/user');
 
-var options = { "production": false };
+var options = {
+	"pfx": "Sapristi.p12", 
+	"production": false 
+};
 var apnConnection = new apn.Connection(options);
 
 apnConnection.on('connected', function() {
