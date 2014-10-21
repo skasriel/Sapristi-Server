@@ -92,6 +92,28 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
 });
 
 
+/**
+ * Creates or updates the APN token for this user (used to send push notifications to iOS device)
+ */
+router.post('/apn-token',  auth.isAuthenticated, function(req, res) {
+  var apnToken = req.body.apnToken;
+  console.log("Updating APN Token for "+req.user.username+" to "+apnToken);
+  user.apnToken = apnToken;
+
+  // Save to database
+  user.save().error(function(error) {
+    console.log("Unable to change APN token for "+user.username+" because of error: "+error);
+    res.status(401);
+    return res.send(401);
+  })
+  .success(function() {
+    res.status(200);
+    redis.client.set("user:"+user.username+":apnToken", user.apnToken, redis.print); // keep the redis cache in sync
+    res.send(auth.OK);
+  });
+});
+
+
 
 
 function findOrCreateConnection(user, friend, connectionState, displayName, desiredCallFrequency, callback) {
