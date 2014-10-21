@@ -56,7 +56,7 @@ var self = module.exports = {
 		note.payload = payload; //{'messageFrom': 'Sapristi'};
 
 		apnConnection.pushNotification(note, device);
-	};
+	},
 
 	sendAvailabilityPushNotifications: function(user) {
 	  Contact.findAll({ where: {toUser: user.username}, include: [{model: User, as: 'origin'}] })
