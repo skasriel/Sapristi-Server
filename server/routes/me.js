@@ -11,7 +11,7 @@ var passport = require('passport'),
     Sequelize = require('sequelize'),
     User = require('../models/user'),
     Contact = require('../models/contact');
-var NotificationManager = require('../NotificationManager');
+var notificationManager = require('../NotificationManager');
 
 var auth = require('./auth');
 
@@ -78,7 +78,7 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   })
   .success(function() {
     res.status(200);
-    NotificationManager.sendAvailabilityPushNotifications(user);     // now notify all relevant users
+    notificationManager.sendAvailabilityPushNotifications(user);     // now notify all relevant users
     redis.client.set("user:"+user.username+":availability", user.availability, redis.print); // keep the redis cache in sync
     //TODO: if the new availability sent by client requires us to compute the availability (e.g. user stopped driving), then do so now...
     var finalAvailability = newAvailability

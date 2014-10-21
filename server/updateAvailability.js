@@ -10,7 +10,8 @@ var redis = require('./redis');
 var User = require('./models/user');
 var TimeSlot = require('./models/timeslots');
 
-var NotificationManager = require('./NotificationManager');
+var notificationManager = require('./NotificationManager');
+
 
 var numToComplete = 0;
 
@@ -140,7 +141,7 @@ function setUserAvailability(context, callback) {
         callback();
         return;
       }).success(function() {
-        NotificationManager.sendAvailabilityPushNotifications(user);     // now notify all relevant users
+        notificationManager.sendAvailabilityPushNotifications(user);     // now notify all relevant users
         redis.client.set(getRedisKey(user.username), user.availability, redis.print); // keep the redis cache in sync
         callback();
         return;

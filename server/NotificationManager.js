@@ -45,54 +45,51 @@ function handleFeedback(feedbackData) {
 	}
 }
 
-function NotificationManager() {
+var self = module.exports = {
+	sendNotification: function(token, badge, title, payload) {
+		var device = new apn.Device(token);
+		var note = new apn.Notification();
+		note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
+		note.badge = badge; // 1
+		note.sound = "ping.aiff";
+		note.alert = "\uD83D\uDCE7 \u2709 "+title;
+		note.payload = payload; //{'messageFrom': 'Sapristi'};
 
-}
+		apnConnection.pushNotification(note, device);
+	};
 
-NotificationManager.prototype.sendNotification = function(token, badge, title, payload) {
-	var device = new apn.Device(token);
-	var note = new apn.Notification();
-	note.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
-	note.badge = badge; // 1
-	note.sound = "ping.aiff";
-	note.alert = "\uD83D\uDCE7 \u2709 "+title;
-	note.payload = payload; //{'messageFrom': 'Sapristi'};
+	sendAvailabilityPushNotifications: function(user) {
+	  Contact.findAll({ where: {toUser: user.username}, include: [{model: User, as: 'origin'}] })
+	  .error(function(error) {
+	    console.error("error finding users to send push notifications for "+user.username+": "+error);
+	    return;
+	  }).success(function(reverseFriendList) {
+		// reverseFriendList contains the Sapristi users who have this user as a friend
+	    for (i=0; i<reverseFriendList.length; i++) {
+	      var contact = reverseFriendList[i];
+	      var connectionState = contact.connectionState;
+	      // TODO: Check that user is also friends with "contact", since otherwise we're letting people see availabilities they shouldn't be seeing...
+	      /*if (connectionState != Contact.StateEnum.CONNECTED) {
+	      // this isn't the correct logic. I really need to look up the other way: did I send a similar invitation
+	        continue; // you can only see friends who have accepted your invitation
+	      }*/
+	      var fromUser = contact.origin;
+	      var displayName = contact.displayName; // this is my name, as stored in their address book
+	      var deviceToken = fromUser.apnToken;
+	      if (! deviceToken) {
+	        console.log("No APN token to send push notifications for user "+displayName);
+	        return;
+	      }
 
-	apnConnection.pushNotification(note, device);
+	      var badge = 3;
+	      var title = "Your friend "+displayName+" changed availability to "+user.availability;
+	      var payload = {'messageFrom': 'Sapristi'};
+	      self.sendNotification(deviceToken, badge, title, payload);
+	    }
+	  });
+	};
 };
 
-NotificationManager.prototype.sendAvailabilityPushNotifications = function(user) {
-  Contact.findAll({ where: {toUser: user.username}, include: [{model: User, as: 'origin'}] })
-  .error(function(error) {
-    console.error("error finding users to send push notifications for "+user.username+": "+error);
-    return;
-  }).success(function(reverseFriendList) {
-	// reverseFriendList contains the Sapristi users who have this user as a friend
-    for (i=0; i<reverseFriendList.length; i++) {
-      var contact = reverseFriendList[i];
-      var connectionState = contact.connectionState;
-      // TODO: Check that user is also friends with "contact", since otherwise we're letting people see availabilities they shouldn't be seeing...
-      /*if (connectionState != Contact.StateEnum.CONNECTED) {
-      // this isn't the correct logic. I really need to look up the other way: did I send a similar invitation
-        continue; // you can only see friends who have accepted your invitation
-      }*/
-      var fromUser = contact.origin;
-      var displayName = contact.displayName; // this is my name, as stored in their address book
-      var deviceToken = fromUser.apnToken;
-      if (! deviceToken) {
-        console.log("No APN token to send push notifications for user "+displayName);
-        return;
-      }
 
-      var badge = 3;
-      var title = "Your friend "+displayName+" changed availability to "+user.availability;
-      var payload = {'messageFrom': 'Sapristi'};
-      this.sendNotification(deviceToken, badge, title, payload);
-    }
-  });
-};
-
-
-module.exports = new NotificationManager();
 
 console.log("Started NotificationManager");
