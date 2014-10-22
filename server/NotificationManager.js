@@ -1,3 +1,7 @@
+var Logger = require('./Logger');
+var logger = Logger.get(Logger.NOTIFICATION_MANAGER);
+
+
 var apn = require('apn');
 var Contact = require('./models/contact');
 var User = require('./models/user');
@@ -12,42 +16,42 @@ var options = {
 var apnConnection = new apn.Connection(options);
 
 apnConnection.on('connected', function() {
-    console.log("Connected");
+    logger.log("Connected");
 });
 
 apnConnection.on('transmitted', function(notification, device) {
-    console.log("Notification transmitted to:" + device.token.toString('hex'));
+    logger.log("Notification transmitted to:" + device.token.toString('hex'));
 });
 
 apnConnection.on('transmissionError', function(errCode, notification, device) {
-    console.error("Notification caused error: " + errCode + " for device ", device, notification);
+    logger.error("Notification caused error: " + errCode + " for device ", device, notification);
     if (errCode == 8) {
-        console.log("A error code of 8 indicates that the device token is invalid. This could be for a number of reasons - are you using the correct environment? i.e. Production vs. Sandbox");
+        logger.log("A error code of 8 indicates that the device token is invalid. This could be for a number of reasons - are you using the correct environment? i.e. Production vs. Sandbox");
     }
 });
 
 apnConnection.on('timeout', function () {
-    console.log("Connection Timeout");
+    logger.log("Connection Timeout");
 });
 
 apnConnection.on('disconnected', function() {
-    console.log("Disconnected from APNS");
+    logger.log("Disconnected from APNS");
 });
 
-apnConnection.on('socketError', console.error);
+apnConnection.on('socketError', logger.error);
 
 // Setup a connection to the Apple APN feedback service using a custom interval (in seconds)
 var feedback = new apn.feedback({ address:'feedback.sandbox.push.apple.com', interval: 60 });
 
 feedback.on('feedback', handleFeedback);
-feedback.on('feedbackError', console.error);
+feedback.on('feedbackError', logger.error);
 
 function handleFeedback(feedbackData) {
 	var time, device;
 	for(var i in feedbackData) {
 		time = feedbackData[i].time;
 		device = feedbackData[i].device;
-		console.log("Device: " + device.toString('hex') + " has been unreachable, since: " + time);
+		logger.log("Device: " + device.toString('hex') + " has been unreachable, since: " + time);
 	}
 }
 
@@ -67,7 +71,7 @@ var self = module.exports = {
 	sendAvailabilityPushNotifications: function(user) {
 	  Contact.findAll({ where: {toUser: user.username}, include: [{model: User, as: 'origin'}] })
 	  .error(function(error) {
-	    console.error("error finding users to send push notifications for "+user.username+": "+error);
+	    logger.error("error finding users to send push notifications for "+user.username+": "+error);
 	    return;
 	  }).success(function(reverseFriendList) {
 		// reverseFriendList contains the Sapristi users who have this user as a friend
@@ -83,7 +87,7 @@ var self = module.exports = {
 	      var displayName = contact.displayName; // this is my name, as stored in their address book
 	      var deviceToken = fromUser.apnToken;
 	      if (! deviceToken) {
-	        console.log("No APN token to send push notifications for user "+displayName);
+	        logger.log("No APN token to send push notifications for user "+displayName);
 	        return;
 	      }
 
@@ -92,7 +96,8 @@ var self = module.exports = {
 		      var title = displayName+" is available for a call";
 		      var payload = {
 		      	"category": "AVAILABILITY_CATEGORY",
-		      	"messageFrom": "Sapristi"
+		      	"messageFrom": "Sapristi",
+		      	"username": user.username
 		      };
 		      self.sendNotification(deviceToken, badge, title, payload);
 	      } else {
@@ -105,4 +110,4 @@ var self = module.exports = {
 
 
 
-console.log("Started NotificationManager");
+logger.log("Started NotificationManager");

@@ -1,4 +1,6 @@
 /* Routes related to me */
+var Logger = require('../Logger');
+var logger = Logger.get(Logger.ME);
 
 
 var async = require('async');
@@ -45,7 +47,7 @@ router.get('/availability', auth.isAuthenticated, function(req, res) {
 function sendAvailability(req, res, availability) {
   res.status(200);
   var response = {"availability": availability};
-  console.log("Availability: "+availability);
+  logger.log("Availability: "+availability);
   res.send(response);
 }
 
@@ -57,7 +59,7 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   var newAvailability = req.body.availability;
   var reason = req.body.reason;
   var user = req.user;
-  console.log("Updating availability for "+req.user.username+" to "+newAvailability);
+  logger.log("Updating availability for "+req.user.username+" to "+newAvailability);
 
   switch(newAvailability) {
     case User.AvailabilityEnum.AVAILABLE:
@@ -67,12 +69,12 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
       break;
     default:
       user.availability = User.AvailabilityEnum.UNKNOWN;
-      console.log("Unknown availability: "+newAvailability+" setting to UNKNOWN instead");
+      logger.log("Unknown availability: "+newAvailability+" setting to UNKNOWN instead");
   }
 
   // Change availability in database
   user.save().error(function(error) {
-    console.log("Unable to change availability for "+user.username+" because of error: "+error);
+    logger.log("Unable to change availability for "+user.username+" because of error: "+error);
     res.status(401);
     return res.send(401);
   })
@@ -98,12 +100,12 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
 router.post('/apn-token',  auth.isAuthenticated, function(req, res) {
   var apnToken = req.body.apnToken;
   var user = req.user;
-  console.log("Updating APN Token for "+req.user.username+" to "+apnToken);
+  logger.log("Updating APN Token for "+req.user.username+" to "+apnToken);
   user.apnToken = apnToken;
 
   // Save to database
   user.save().error(function(error) {
-    console.log("Unable to change APN token for "+user.username+" because of error: "+error);
+    logger.log("Unable to change APN token for "+user.username+" because of error: "+error);
     res.status(401);
     return res.send(401);
   })
@@ -118,16 +120,16 @@ router.post('/apn-token',  auth.isAuthenticated, function(req, res) {
 
 
 function findOrCreateConnection(user, friend, connectionState, displayName, desiredCallFrequency, callback) {
-  console.log("FindOrCreateConnection: "+user.username+" -> "+ friend.username);
+  logger.log("FindOrCreateConnection: "+user.username+" -> "+ friend.username);
   var query = "\"fromUser\"='" + user.username + "' AND \"toUser\"='"+ friend.username +"'";
   Contact.findOrCreate(
     {fromUser: user.username, toUser: friend.username},
     {fromUser: user.username, toUser: friend.username, connectionState: connectionState, displayName: displayName, desiredCallFrequency: desiredCallFrequency}
   ).error(function(error) {
-    console.log("error creating/finding connection entry "+user.username+" -> "+friend.username+" err="+error);
+    logger.log("error creating/finding connection entry "+user.username+" -> "+friend.username+" err="+error);
   }).success(function(connection, created) {
-    console.log("created connection: "+user.username+ " -> "+friend.username+" as "+connectionState);
-    console.log("Created = "+created+" ; Values = "+connection.values);
+    logger.log("created connection: "+user.username+ " -> "+friend.username+" as "+connectionState);
+    logger.log("Created = "+created+" ; Values = "+connection.values);
     callback(); // for queue
   });
 }
@@ -145,9 +147,9 @@ function createUserAndConnection(context, innerCallback) {
     {username: phoneNumber},
     {mobileNumber: phoneNumber, authToken: 'fake', userState: 'GHOST'}
   ).error(function(error) {
-    console.error("Cannot findOrCreate "+phoneNumber+" err="+error);
+    logger.error("Cannot findOrCreate "+phoneNumber+" err="+error);
   }).success(function(friend, created) {
-    console.log("FindOrCreate success: "+friend.username+" created? = "+created);
+    logger.log("FindOrCreate success: "+friend.username+" created? = "+created);
     findOrCreateConnection(user, friend, Contact.StateEnum.INVITED, displayName, desiredCallFrequency, innerCallback);
   });
 }
@@ -162,24 +164,24 @@ function uploadContact(context, callback) {
   var user = context.user, contact = context.contact;
   var displayName = contact.displayName;
   var desiredCallFrequency = contact.desiredCallFrequency; 
-  console.log("\n\n\nuploadContact: "+displayName);
+  logger.log("\n\n\nuploadContact: "+displayName);
 
   contact.normalizedPhoneNumbers = [];
   contact.rawPhoneNumbers = [];
 
   if (contact.phoneNumbers.length == 0) {
-    console.error("ERROR: " + contact.displayName + " has no phone numbers");
+    logger.error("ERROR: " + contact.displayName + " has no phone numbers");
     callback();
     return;
   }
   for (var i=0; i<contact.phoneNumbers.length; i++) {
       var normalized = User.normalize(contact.phoneNumbers[i], User.Country.US); // TODO: this assumes the user is in the US and interprets all local numbers as US numbers...
       if (normalized==null || normalized=="") {
-        console.log("Can't normalize friend number, ignoring: "+contact.phoneNumbers[i]);
+        logger.log("Can't normalize friend number, ignoring: "+contact.phoneNumbers[i]);
       } else {
         if (normalized == user.username) {
           // don't upload the contact if it's the user herself (e.g. I have myself in my address book...)
-          console.log("Skipping self contact: "+contact);
+          logger.log("Skipping self contact: "+contact);
           callback();
           return;
         }
@@ -189,7 +191,7 @@ function uploadContact(context, callback) {
   }
 
   if (contact.normalizedPhoneNumbers.length == 0) {
-    console.error("ERROR: " + contact.displayName + " has no normalized phone numbers");
+    logger.error("ERROR: " + contact.displayName + " has no normalized phone numbers");
     callback();
     return;
   }
@@ -205,24 +207,24 @@ function uploadContact(context, callback) {
   query += ")"
   User.find({ where: query })
     .error(function(error) {
-      console.error("error retrieving users "+error+" query = "+query+" normalized="+contact.normalizedPhoneNumbers+" raw="+contact.phoneNumbers);
+      logger.error("error retrieving users "+error+" query = "+query+" normalized="+contact.normalizedPhoneNumbers+" raw="+contact.phoneNumbers);
     }).success(function(friend) {
       if (friend) {
         // this contact is already a Sapristi user. So create a Contact if there isn't one already
         // and leave as-is if there is one since it may be already in a CONNECTED state and we don't want to reset it to INVITED)
         // Not that it makes a difference for now since we're virally considering INVITED to be the same as CONNECTED
-        console.log("Found a user for contact #"+i+" with username "+friend.username);
+        logger.log("Found a user for contact #"+i+" with username "+friend.username);
         findOrCreateConnection(user, friend, Contact.StateEnum.INVITED, displayName, desiredCallFrequency, callback);
       } else {
         var ghostCreationQueue = async.queue(createUserAndConnection, 1);
         ghostCreationQueue.drain = function() {
-          console.log("created all ghost users for contact "+displayName);
+          logger.log("created all ghost users for contact "+displayName);
           callback();
         }
         for (var j=0; j<contact.normalizedPhoneNumbers.length; j++) {
           // Create a bunch of ghost users, with each of the phone numbers I have for this contact
           ghostCreationQueue.push({user: user, phoneNumber: contact.normalizedPhoneNumbers[j], displayName: displayName}, function(err) {
-            console.log("For contact "+displayName+", finished processing phone #"+j+" err="+err);
+            logger.log("For contact "+displayName+", finished processing phone #"+j+" err="+err);
           });
           //createUserAndConnection(user, contact.normalizedPhoneNumbers[j], displayName, callback);
         }
@@ -237,15 +239,15 @@ function uploadContact(context, callback) {
  * Upload of all contacts by user
  */
 router.post('/contacts',  auth.isAuthenticated, function(req, res) {
-  console.log("In Post /contacts: "+req.body.json);
+  logger.log("In Post /contacts: "+req.body.json);
   var user = req.user;  // sequelize object
   var contacts = JSON.parse(req.body.json);
-  console.log("Num contacts:: "+contacts.length);
+  logger.log("Num contacts:: "+contacts.length);
 
   var contactQueue = async.queue(uploadContact, 1);
 
   contactQueue.drain = function() {
-      console.log('!!!! all contacts have been processed for user '+user.username);
+      logger.log('!!!! all contacts have been processed for user '+user.username);
       res.status(200);
       res.send(auth.OK);
   }
@@ -254,7 +256,7 @@ router.post('/contacts',  auth.isAuthenticated, function(req, res) {
     var contact = contacts[i];
     //uploadContact(user, contact);
     contactQueue.push({user:user, contact:contact, index: i}, function(err) {
-      console.log("Finished processing a contact err="+err);
+      logger.log("Finished processing a contact err="+err);
     });
   }
 });
@@ -267,7 +269,7 @@ router.post('/contacts',  auth.isAuthenticated, function(req, res) {
 router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
   var user = req.user;
   if (user.userState != User.UserStateEnum.CONFIRMED) { // should really check this as a middleward in addition to isAuthenticated
-    console.error("Attempt to make a request with a non confirmed user: "+user.username);
+    logger.error("Attempt to make a request with a non confirmed user: "+user.username);
     res.status(401);
     res.send(401);
     return;
@@ -281,7 +283,7 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
   //User.findAll({where: {username: user.username}}, { include: [{model: Contact, as: 'origination'}] })
   Contact.findAll({ where: {fromUser: user.username}, include: [{model: User, as: 'destination'}] })
   .error(function(error) {
-    console.error("error retrieving contacts "+error);
+    logger.error("error retrieving contacts "+error);
     res.status(401);
     res.send(401);
     return;
@@ -303,7 +305,7 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
         continue; // only confirmed users have a meaningful state
       }
       if (!availability) {
-        console.error("missing availability info for "+displayName);
+        logger.error("missing availability info for "+displayName);
         availability = User.AvailabilityEnum.UNKNOWN;
       }
       availabilityList.push({
@@ -311,12 +313,12 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
         availability: availability, // BUSY, UNKNOWN or AVAILABLE
         updatedAt: updatedAt.toISOString() // the time at which this user's availability was last changed
       });
-      console.log(req.user.username + " -> " + friend.toUser+": "+displayName+" "+availability+" "+connectionState+" @ "+updatedAt.toISOString());
+      logger.log(req.user.username + " -> " + friend.toUser+": "+displayName+" "+availability+" "+connectionState+" @ "+updatedAt.toISOString());
     }
     res.status(200);
-    console.log("sending availability list: "+JSON.stringify(availabilityList));
+    logger.log("sending availability list: "+JSON.stringify(availabilityList));
     res.send(availabilityList);
-    console.log("done sending availability matrix");
+    logger.log("done sending availability matrix");
   });
 
 });

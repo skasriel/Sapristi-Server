@@ -1,4 +1,7 @@
 'use strict';
+var Logger = require('./Logger');
+var logger = Logger.get(Logger.UPDATE_AVAILABILITY);
+
 var async = require('async');
 
 var Sequelize = require('sequelize');
@@ -53,7 +56,7 @@ function run() {
                         Sequelize.and(["\"recurrence\" like '%"+todayDayOfWeek+"%'"], {startTime: {lt: formattedConvertedNow}}, {endTime: {gt: formattedConvertedNow}})
                         )})
   .error(function(error) {
-    console.error("error retrieving timeslots "+error);
+    logger.error("error retrieving timeslots "+error);
     return 100;
   }).success(function(timeslots) {
     var userAvailabilities = [];
@@ -62,7 +65,7 @@ function run() {
     // First, figure out the availability for each user with a matching timeslot (there may be several timeslots...)
     for (var i=0; i<timeslots.length; i++) {
       var timeslot = timeslots[i];
-      console.log("Found timeslot: "+timeslot.toString());
+      logger.log("Found timeslot: "+timeslot.toString());
       userAvailabilities[timeslot.username] = timeslot.availability
     }
 
@@ -71,19 +74,19 @@ function run() {
     var setAvailabilityQueue = async.queue(setUserAvailability, 1);
 
     setAvailabilityQueue.drain = function() {
-      console.log('DONE updating user availabilities');
+      logger.log('DONE updating user availabilities');
       process.exit(0);
       return;
     }
 
     for (var username in userAvailabilities) {
-      console.log("Setting availability for "+username+" to "+userAvailabilities[username]);
+      logger.log("Setting availability for "+username+" to "+userAvailabilities[username]);
       var availability = {
         username: username, 
         availability: userAvailabilities[username]
       }
       setAvailabilityQueue.push(availability, function(err) {
-        console.log("Finished processing user: "+username+" err="+err);
+        logger.log("Finished processing user: "+username+" err="+err);
       });
     }
 
@@ -94,7 +97,7 @@ function run() {
       var endTime = toTime(timeslot.endTime);
       var username = timeslot.username;
       if (startTime<=time && time<=endTime) {
-        console.log("Setting user "+username+" to available because in timeslot: "+timeslot.startTime+" - "+timeslot.endTime+": "+time);
+        logger.log("Setting user "+username+" to available because in timeslot: "+timeslot.startTime+" - "+timeslot.endTime+": "+time);
         usernames[username] = true;
         setUserAvailability(username, User.AvailabilityEnum.AVAILABLE);
       } else {
@@ -105,7 +108,7 @@ function run() {
     // now any user who is in usernames has a timeslot defined, but none that matched, and thus user should be marked as unknown availability
     /*for (var username in usernames) {
       var availability = usernames[username];
-      console.log("Setting user "+username+" to "+availability);
+      logger.log("Setting user "+username+" to "+availability);
       setUserAvailability(username, User.AvailabilityEnum.UNKNOWN);
     }*/
   });
@@ -120,24 +123,24 @@ function setUserAvailability(context, callback) {
   // check whether current availability (in redis cache) is the same as new
   redis.client.get(getRedisKey(username), function(err, currentAvailability) {
     if (newAvailability == currentAvailability) {
-      console.log("User availability hasn't changed, skipping: "+username);
+      logger.log("User availability hasn't changed, skipping: "+username);
       callback();
       return;
     }
     User.find({ where: { username: username }})
     .error(function(error) {
-      console.error("error finding user "+username);
+      logger.error("error finding user "+username);
       callback();
       return;
     }).success(function(user) {
       if (!user) {
-        console.error("Can't find user "+username+" to update her availability to "+newAvailability);
+        logger.error("Can't find user "+username+" to update her availability to "+newAvailability);
         callback();
         return;
       }
       user.availability = newAvailability;
       user.save().error(function(error) {
-        console.log("Unable to change availability for "+user.username+" because of error: "+error);
+        logger.log("Unable to change availability for "+user.username+" because of error: "+error);
         callback();
         return;
       }).success(function() {

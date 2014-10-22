@@ -1,12 +1,16 @@
 'use strict';
 
+var Logger = require('./Logger');
+var logger = Logger.get(Logger.DEFAULT);
+
+logger.info("starting");
+
 var PhoneFormat = require('./PhoneFormat');
 
 /** Express settings */
 var express = require('express');
 var path = require('path');
 var favicon = require('static-favicon');
-var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session      = require('express-session');
@@ -34,7 +38,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(favicon());
-app.use(logger('dev'));
+//app.use(require('morgan')('dev'));
+app.use(require('morgan')({ "stream": Logger.get(Logger.EXPRESS).stream }));
+
 app.use(bodyParser.json({limit: '100mb'}));
 app.use(bodyParser.urlencoded({limit: '100mb'}));
 app.use(cookieParser());
@@ -55,12 +61,12 @@ app.use(session({ store: new RedisStore(redisOptions), secret: 'klj2l34lkjslkjrw
 /*app.use( function( req, res ){
     if( req.query.login ){
         // upgrade a session to a redis session by a user id
-        console.log("Upgrade session due to login");
+        logger.log("Upgrade session due to login");
         req.session.upgrade( req.query.user_id );
     }
     if( req.session.id && req.query.logout ){
         // kill the active session
-        console.log("Destroy session due to logout");
+        logger.log("Destroy session due to logout");
         req.session.destroy();
     }
     res.end( "Hello express redis sessions" );
@@ -90,7 +96,7 @@ app.use('/api/settings', settings);
 });*/
 
 var server = app.listen(5000, function() {
-    console.log('Listening on port %d', server.address().port);
+    logger.log('Listening on port '+server.address().port);
 });
 
 /// error handlers
@@ -125,15 +131,15 @@ module.exports = app;
 
 
 /*app.use(function(err,req,res,next) {
-  console.log("checking for 401");
+  logger.log("checking for 401");
   // Just basic, should be filled out to next()
   // or respond on all possible code paths
   if(err instanceof Error) {
-    console.log("there's an error, is it 401");
+    logger.log("there's an error, is it 401");
     if(err.message === '401') {
         res.status(401);
         res.send(401);//res.render('error401');
-        console.log("yes, return 401");
+        logger.log("yes, return 401");
     } else {
       res.send(message);
     }

@@ -1,4 +1,6 @@
 /* Routes related to authorization/authentication and user management */
+var Logger = require('../Logger');
+var logger = Logger.get(Logger.AUTH);
 
 
 var express = require('express');
@@ -15,7 +17,7 @@ function isAuthenticated(req,res,next) {
   if(req.isAuthenticated()) {
       next();
   } else {
-    console.log("User isn't authenticated, returning 401");
+    logger.log("User isn't authenticated, returning 401");
     res.status(401);
     res.send(401);
     next(new Error(401));
@@ -23,7 +25,7 @@ function isAuthenticated(req,res,next) {
 }
 
 router.post('/login', passport.authenticate('local'), function(req, res) {
-    console.log("logging in");
+    logger.log("logging in");
     res.send(OK);
 });
 
@@ -37,7 +39,7 @@ router.get('/logout', function(req, res) {
 
 // User registration
 router.post('/register', function(req, res) {
-  console.log("In Post /register");
+  logger.log("In Post /register");
 
   req.logout();
 
@@ -47,7 +49,7 @@ router.post('/register', function(req, res) {
   if (normalizedNumber == "" || normalizedNumber == null) {
     // error normalizing to e164 format...
     res.status(401);
-    console.errror("Unable to e164 on "+rawMobileNumber);
+    logger.errror("Unable to e164 on "+rawMobileNumber);
     return res.send({error: "Invalid phone number: "+rawMobileNumber});
   }
   var username = normalizedNumber;
@@ -76,16 +78,16 @@ router.post('/register', function(req, res) {
     user.hashedPassword = user.encryptPassword(password, user.salt);
 
     user.save().error(function(error) {
-      console.error("Unable to create user "+username+" because of error: "+error);
+      logger.error("Unable to create user "+username+" because of error: "+error);
       res.status(401);
       return res.send(401);
     }).success(function() {
-      console.log("Created new user: "+username);
+      logger.log("Created new user: "+username);
       req.login(user, function(err) {
-        console.log("redis session upgrade for "+username);
+        logger.log("redis session upgrade for "+username);
         if (req.session.upgrade) req.session.upgrade(username); // redis session
         if (err) {
-           console.error("error creating session: "+err);
+           logger.error("error creating session: "+err);
            res.status(401);
            return res.send(401);
         }
@@ -98,7 +100,7 @@ router.post('/register', function(req, res) {
       });
     })
   }).error(function(err) {
-    console.error("Error in looking up user "+username+" err="+err)
+    logger.error("Error in looking up user "+username+" err="+err)
     res.status(401);
     return res.send(401);
   });
@@ -108,7 +110,7 @@ router.post('/register', function(req, res) {
 
 // Verify mobile number confirmation code
 router.post('/confirmation-code',  isAuthenticated, function(req, res) {
-  console.log("In Post /confirmation-code");
+  logger.log("In Post /confirmation-code");
   var confirmationCode = req.body.confirmationCode;
 
   // Here should validate code with Twilio or something...
@@ -117,7 +119,7 @@ router.post('/confirmation-code',  isAuthenticated, function(req, res) {
   var user = req.user;
   user.userState = User.UserStateEnum.CONFIRMED;
   user.save().error(function(error) {
-    console.log("Unable to change state for "+user.username+" because of error: "+error);
+    logger.log("Unable to change state for "+user.username+" because of error: "+error);
     res.status(401);
     return res.send(401);
   })
