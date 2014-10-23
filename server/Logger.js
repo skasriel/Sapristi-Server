@@ -37,6 +37,7 @@ Logger.EXPRESS = "express";
 Logger.NOTIFICATION_MANAGER = "NotificationManager";
 Logger.UPDATE_AVAILABILITY = "UpdateAvailability";
 Logger.PASSPORT = "Passport";
+Logger.SEQUELIZE = "Sequelize";
 
 Logger.get = function(name) {
 	var logger = loggers[name];
@@ -52,7 +53,7 @@ Logger.prototype.info = function(msg) {
 };
 
 Logger.prototype.log = function(msg) {
-	wrappedLogger.log('debug', msg);
+	wrappedLogger.log('debug', " ["+this.name+"]: "+msg);
 };
 
 Logger.prototype.error = function(msg) {	

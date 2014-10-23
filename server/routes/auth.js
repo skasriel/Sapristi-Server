@@ -12,6 +12,9 @@ var passport = require('passport'),
 var OK = {"status": "ok"};
 var ERROR={"status": "error"};
 
+var notificationManager = require('../NotificationManager');
+
+
 // Shared function to verify that the user is logged in before attempting to respond to GET/POST
 function isAuthenticated(req,res,next) {
   if(req.isAuthenticated()) {
@@ -91,6 +94,9 @@ router.post('/register', function(req, res) {
            res.status(401);
            return res.send(401);
         }
+        // send push notifications to everyone who has me in their contacts to tell them that I'm now on Sapristi
+        notificationManager.sendRegistrationPushNotifications(user); 
+
         var results = {
           "username": username,
           "authToken": authToken
