@@ -116,6 +116,30 @@ router.post('/apn-token',  auth.isAuthenticated, function(req, res) {
   });
 });
 
+/** 
+ * Updates the friend's desiredCallFrequency
+ */
+ router.post('/desired-frequency/:friend',  auth.isAuthenticated, function(req, res) {
+  var user = req.user;
+  var friend = req.params.friend;
+  var newFrequency = req.body.newFrequency
+  logger.log("Updating desiredFrequency for friend"+friend+" of user "+req.user.username+" to "+newFrequency);
+  Contact.find({fromUser: user.username, toUser: friend}
+    ).error(function(error) {
+    logger.log("error finding connection entry "+user.username+" -> "+friend+" err="+error);
+  }).success(function(connection) {
+    connection.desiredFrequency = newFrequency;
+    connection.save().error(function(error) {
+      logger.log("Unable to save desiredFrequency for "+friend+" because of error: "+error);
+      res.status(401);
+      return res.send(401);
+    }).success(function() {
+      res.status(200);
+      res.send(auth.OK);
+    });
+  });
+});
+
 
 
 
