@@ -33,21 +33,24 @@ function getRedisKey(username) {
 router.get('/availability', auth.isAuthenticated, function(req, res) {
   var user = req.user;
   var username = user.username;
+  var reason = user.reason;
+  var availability = user.availability;
 
   // the redis look up is actually useless at this stage given that Passport currently always looks up the user from the DB for each request...
-  redis.client.get(getRedisKey(username), function(err, availability) {
+  /*redis.client.get(getRedisKey(username), function(err, availability) {
     if (!err & availability) {
       sendAvailability(req, res, availability);
       return;
-    }
-    sendAvailability(req, res, user.availability);
-  });
+    }*/
+    sendAvailability(req, res, availability, reason);
+  //});
 });
 
-function sendAvailability(req, res, availability) {
+function sendAvailability(req, res, availability, reason) {
   res.status(200);
   var response = {"availability": availability};
-  logger.log("Availability: "+availability);
+  if (reason) response["reason"] = reason;
+  logger.log("Availability: "+availability+" reason: "+reason);
   res.send(response);
 }
 
@@ -59,7 +62,10 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   var newAvailability = req.body.availability;
   var reason = req.body.reason;
   var user = req.user;
-  logger.log("Updating availability for "+req.user.username+" to "+newAvailability);
+
+  logger.log("Updating availability for "+req.user.username+" to "+newAvailability+" reason="+reason);
+
+  user.reason = reason; // store the reason in the User table
 
   switch(newAvailability) {
     case User.AvailabilityEnum.AVAILABLE:

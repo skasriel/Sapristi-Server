@@ -16,6 +16,7 @@ var User = sequelize.define('User', {
   rawMobileNumber: {type: Sequelize.STRING}, // number as entered in user's address book
   authToken:    { type: Sequelize.STRING},
   availability: { type: Sequelize.STRING}, //Sequelize.ENUM('AVAILABLE', 'UNKNOWN', 'BUSY')},
+  reason:       { type: Sequelize.STRING}, 
   birthday:     { type: Sequelize.DATE},
   userState:    { type: Sequelize.STRING}, //type: Sequelize.ENUM('GHOST', 'CREATED', 'CONFIRMED')}
   apnToken:     { type: Sequelize.STRING}, // opaque identifier sent by iOS devices for push notifications
@@ -58,6 +59,10 @@ User.AvailabilityEnum = {
   AVAILABLE: 'AVAILABLE',
   UNKNOWN: 'UNKNOWN',
   BUSY: 'BUSY'
+};
+
+User.ReasonEnum = {
+
 };
 
 
