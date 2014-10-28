@@ -6,14 +6,32 @@ var apn = require('apn');
 var Contact = require('./models/contact');
 var User = require('./models/user');
 
-var options = {
-	"cert": "SapristiDevCert.pem",
-	"key": "SapristiDevKey.pem",
-	"passphrase": "320paris",
-	//"pfx": "Sapristi.p12", 
-	"production": false 
-};
-var apnConnection = new apn.Connection(options);
+var apnConnection;
+
+var env = process.env.NODE_ENV || "staging";
+
+var passphrase = process.env.passphrase;
+
+if (env == "staging") {
+	var options = {
+		"cert": "SapristiProdCert.pem",
+		"key": "SapristiProdKey.pem",
+		"passphrase": passphrase,
+		"production": true 
+	};
+	apnConnection = new apn.Connection(options);
+	logger.log("Creating Staging APN connection");
+} else {
+	var options = {
+		"cert": "SapristiDevCert.pem",
+		"key": "SapristiDevKey.pem",
+		"passphrase": passphrase,
+		"production": false 
+	};
+	apnConnection = new apn.Connection(options);
+	logger.log("Creating Production APN connection");
+}
+
 
 apnConnection.on('connected', function() {
     logger.log("Connected");

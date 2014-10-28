@@ -83,7 +83,8 @@ function run() {
       logger.log("Setting availability for "+username+" to "+userAvailabilities[username]);
       var availability = {
         username: username, 
-        availability: userAvailabilities[username]
+        availability: userAvailabilities[username],
+        reason: "CALENDAR"
       }
       setAvailabilityQueue.push(availability, function(err) {
         logger.log("Finished processing user: "+username+" err="+err);
@@ -119,7 +120,8 @@ function getRedisKey(username) {
 }
 
 function setUserAvailability(context, callback) {
-  var username = context.username, newAvailability = context.availability;
+  var username = context.username, newAvailability = context.availability, newReason = context.reason;
+
   // check whether current availability (in redis cache) is the same as new
   redis.client.get(getRedisKey(username), function(err, currentAvailability) {
     if (newAvailability == currentAvailability) {
@@ -139,6 +141,7 @@ function setUserAvailability(context, callback) {
         return;
       }
       user.availability = newAvailability;
+      user.reason = newReason;
       user.save().error(function(error) {
         logger.log("Unable to change availability for "+user.username+" because of error: "+error);
         callback();
