@@ -84,6 +84,7 @@ var self = module.exports = {
 		note.sound = "ping.aiff";
 		note.alert = title // "\uD83D\uDCE7 \u2709 "+title;
 		note.payload = payload; //{'messageFrom': 'Sapristi'};
+		note.category = payload["category"];
 
 		apnConnection.pushNotification(note, device);
 		logger.log("Sending notification: "+title+" "+payload+" to "+token);
