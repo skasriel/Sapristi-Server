@@ -11,12 +11,11 @@ var apnConnection;
 var env = process.env.NODE_ENV || "staging";
 
 var passphrase = process.env.passphrase;
-logger.log("Passphrase = "+passphrase);
 
 if (env == "staging") {
 	var options = {
-		"cert": "SapristiProdCert.pem",
-		"key": "SapristiKey.pem",
+		"cert": "Keys/SapristiProdCert.pem",
+		"key": "Keys/SapristiKey.pem",
 		"passphrase": passphrase,
 		"production": true 
 	};
@@ -24,8 +23,8 @@ if (env == "staging") {
 	logger.log("Creating Staging APN connection");
 } else {
 	var options = {
-		"cert": "SapristiDevCert.pem",
-		"key": "SapristiDevKey.pem",
+		"cert": "Keys/SapristiDevCert.pem",
+		"key": "Keys/SapristiDevKey.pem",
 		"passphrase": passphrase,
 		"production": false 
 	};
