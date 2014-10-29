@@ -73,6 +73,13 @@ function handleFeedback(feedbackData) {
 	}
 }
 
+var APNEnum = {
+  FriendAvailability: 'FRIEND_AVAILABILITY',
+  MyAvailability: 'MY_AVAILABILITY',
+  Registration: 'REGISTRATION'
+};
+
+
 
 // Public
 var self = module.exports = {
@@ -100,6 +107,7 @@ var self = module.exports = {
 			var myPayload = {
 				"category": "AVAILABILITY_CATEGORY",
 			    "messageFrom": "Sapristi",
+	     		"type": APNEnum.MyAvailability,
 			    "username": user.username
 			};
 			self.sendNotification(myToken, myBadge, myTitle, myPayload);
@@ -134,6 +142,7 @@ var self = module.exports = {
 			      	var payload = {
 			      		"category": "AVAILABILITY_CATEGORY",
 			      		"messageFrom": "Sapristi",
+			      		"type": APNEnum.FriendAvailability,
 			      		"username": user.username
 			      	};
 			      	self.sendNotification(deviceToken, badge, title, payload);
@@ -173,6 +182,7 @@ var self = module.exports = {
 		      	var payload = {
 			      		"category": "AVAILABILITY_CATEGORY",
 			      		"messageFrom": "Sapristi",
+			      		"type": APNEnum.Registration,
 			      		"username": user.username
 			    };
 			    self.sendNotification(deviceToken, badge, title, payload);
