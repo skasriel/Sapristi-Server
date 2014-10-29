@@ -11,11 +11,12 @@ var apnConnection;
 var env = process.env.NODE_ENV || "staging";
 
 var passphrase = process.env.passphrase;
+logger.log("Passphrase = "+passphrase);
 
 if (env == "staging") {
 	var options = {
 		"cert": "SapristiProdCert.pem",
-		"key": "SapristiProdKey.pem",
+		"key": "SapristiKey.pem",
 		"passphrase": passphrase,
 		"production": true 
 	};
