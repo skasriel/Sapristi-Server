@@ -86,10 +86,25 @@ var self = module.exports = {
 		note.payload = payload; //{'messageFrom': 'Sapristi'};
 
 		apnConnection.pushNotification(note, device);
+		logger.log("Sending notification: "+title+" "+payload+" to "+token);
 	},
 
 	// User has changed her availability. Notify her reverse friends
 	sendAvailabilityPushNotifications: function(user) {
+		// Send a notification to the user herself (only for debugging for now)
+		var myToken = user.apnToken;
+		if (myToken) {
+			var myBadge = 0;
+			var myTitle = "I changed my availability";
+			var myPayload = {
+				"category": "AVAILABILITY_CATEGORY",
+			    "messageFrom": "Sapristi",
+			    "username": user.username
+			};
+			self.sendNotification(myToken, myBadge, myTitle, myPayload);
+		}
+
+
 		Contact.findAll({ where: {toUser: user.username}, include: [{model: User, as: 'origin'}] })
 		 .error(function(error) {
 		 	logger.error("error finding users to send push notifications for "+user.username+": "+error);
