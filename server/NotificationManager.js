@@ -14,19 +14,19 @@ var passphrase = process.env.passphrase;
 
 if (env == "staging") {
 	var options = {
-		"cert": "Keys/SapristiProdCert.pem",
-		"key": "Keys/SapristiKey.pem",
+		"cert": "Keys/SapristiDevCert.pem",
+		"key": "Keys/SapristiDevKey.pem",
 		"passphrase": passphrase,
-		"production": true 
+		"production": false 
 	};
 	apnConnection = new apn.Connection(options);
 	logger.log("Creating Staging APN connection");
 } else {
 	var options = {
-		"cert": "Keys/SapristiDevCert.pem",
-		"key": "Keys/SapristiDevKey.pem",
+		"cert": "Keys/SapristiProdCert.pem",
+		"key": "Keys/SapristiKey.pem",
 		"passphrase": passphrase,
-		"production": false 
+		"production": true 
 	};
 	apnConnection = new apn.Connection(options);
 	logger.log("Creating Production APN connection");
