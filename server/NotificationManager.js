@@ -94,7 +94,7 @@ var self = module.exports = {
 		//note.category = payload["category"];
 
 		apnConnection.pushNotification(note, device);
-		logger.log("Sending notification: "+title+" "+payload+" to "+token);
+		logger.log("Sending notification: "+title+" "+JSON.stringify(payload)+" to "+token);
 	},
 
 	// User has changed her availability. Notify her reverse friends
@@ -103,7 +103,7 @@ var self = module.exports = {
 		var myToken = user.apnToken;
 		if (myToken) {
 			var myBadge = 0;
-			var myTitle = "I changed my availability";
+			var myTitle = "OK to set my availability to "+user.availability+" because "+user.reason+"?"
 			var myPayload = {
 				"category": "AVAILABILITY_CATEGORY",
 			    "messageFrom": "Sapristi",
