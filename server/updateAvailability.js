@@ -84,7 +84,7 @@ function run() {
       var availability = {
         username: username, 
         availability: userAvailabilities[username],
-        reason: "CALENDAR"
+        reason: User.ReasonEnum.Calendar
       }
       setAvailabilityQueue.push(availability, function(err) {
         logger.log("Finished processing user: "+username+" err="+err);

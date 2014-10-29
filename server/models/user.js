@@ -62,7 +62,10 @@ User.AvailabilityEnum = {
 };
 
 User.ReasonEnum = {
-
+  Calendar: "CALENDAR",
+  User: "USER",
+  CarMotion: "CAR_MOTION",
+  Timeslot: "TIMESLOT"    
 };
 
 

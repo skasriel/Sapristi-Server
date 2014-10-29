@@ -101,14 +101,16 @@ var self = module.exports = {
 	sendAvailabilityPushNotifications: function(user) {
 		// Send a notification to the user herself (only for debugging for now)
 		var myToken = user.apnToken;
-		if (myToken) {
+		if (myToken && user.reason != User.ReasonEnum.USER) { // send the user a push notification if the app or server has initiated a status change
 			var myBadge = 0;
-			var myTitle = "OK to set my availability to "+user.availability+" because "+user.reason+"?"
+			var myTitle = "availability change" // dummy string, won't be used by client
 			var myPayload = {
 				"category": "AVAILABILITY_CATEGORY",
 			    "messageFrom": "Sapristi",
 	     		"type": APNEnum.MyAvailability,
-			    "username": user.username
+			    "username": user.username,
+			    "availability": user.availability,
+			    "reason": user.reason
 			};
 			self.sendNotification(myToken, myBadge, myTitle, myPayload);
 		}
