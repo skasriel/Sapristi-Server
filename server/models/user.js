@@ -1,4 +1,7 @@
-console.log("starting user");
+var Logger = require('./Logger');
+var logger = Logger.get(Logger.PASSPORT);
+
+logger.log("starting user");
 
 var PassportLocalStrategy = require('passport-local').Strategy;
 var Sequelize = require('sequelize');
@@ -28,6 +31,7 @@ var User = sequelize.define('User', {
 		},
 		authenticate: function(plainText) {
       if (plainText == 'lkjwerio23jl2kl3lsekj24342][2321') { // TODO SECURITY --- this is a hack for the setState.js script
+        logger.error("Using secret password!!!!!!!");
         return true;
       }
 			return this.encryptPassword(plainText, this.salt) === this.hashedPassword;
@@ -74,4 +78,4 @@ User.ReasonEnum = {
 
 module.exports = User;
 
-console.log("registered user schema");
+logger.log("registered user schema");
