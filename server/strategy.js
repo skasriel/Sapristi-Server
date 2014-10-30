@@ -35,7 +35,7 @@ passport.use(new LocalStrategy({
       if (!user) {
         logger.error("Unknown user: "+username);
         done(null, false, { message: 'Unknown user' });
-      } else if (password!='lkjwerio23jl2kl3lsekj24342][2321' && !user.authenticate(password)) {
+      } else if (!user.authenticate(password)) {
         logger.error("Wrong password for user: "+username);
         done(null, false, { message: 'Invalid password'});
       } else {
