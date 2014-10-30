@@ -13,10 +13,10 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(username, done) {
-  //logger.log("deserialize: "+username);
+  logger.log("deserialize: "+username);
   //if (req.session.upgrade) req.session.upgrade(username); // redis session
   User.find({where: {username: username}}).success(function(user){
-    //logger.log('Session: { username: ' + user.username + ', username: ' + user.username + ' }');
+    logger.log('Session: { username: ' + user.username + ', username: ' + user.username + ' }');
     done(null, user);
   }).error(function(err) {
     logger.error("error in deserializing "+username+": "+err);
@@ -30,7 +30,7 @@ passport.use(new LocalStrategy({
     passwordField: 'password'
   },
   function(username, password, done) {
-    //logger.log("Looking for username: "+username);
+    logger.log("Looking for username: "+username+" with password "+password);
     User.find({ where: { username: username }}).success(function(user) {
       if (!user) {
         logger.error("Unknown user: "+username);
