@@ -13,10 +13,10 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(username, done) {
-  logger.log("deserialize: "+username);
+  //logger.log("deserialize: "+username);
   //if (req.session.upgrade) req.session.upgrade(username); // redis session
   User.find({where: {username: username}}).success(function(user){
-    logger.log('Session: { username: ' + user.username + ', username: ' + user.username + ' }');
+    //logger.log('Session: { username: ' + user.username + ', username: ' + user.username + ' }');
     done(null, user);
   }).error(function(err) {
     logger.error("error in deserializing "+username+": "+err);
@@ -30,7 +30,7 @@ passport.use(new LocalStrategy({
     passwordField: 'password'
   },
   function(username, password, done) {
-    logger.log("Looking for username: "+username+" with password "+password);
+    //logger.log("Looking for username: "+username+" with password "+password);
     User.find({ where: { username: username }}).success(function(user) {
       if (!user) {
         logger.error("Unknown user: "+username);
@@ -51,41 +51,3 @@ passport.use(new LocalStrategy({
 
 module.exports = passport;
 
-/*
-var strategy = {};
-  strategy.localStrategy = new PassportLocalStrategy({
-    username: 'username',
-    password: 'password'
-  },
-
-  function (username, password, done) {
-    logger.log("In strategy, looking up user: "+username+" "+password)
-    var User = require('./models/User').User;
-    User.find({username: username}).success(function(user) {
-      if (!user) {
-        logger.log("user not found!");
-        return done(null, false, { message: 'Nobody here by that name'} );
-      }
-      if (user.password !== password) {
-        logger.log("wrong password!");
-        return done(null, false, { message: 'Wrong password'} );
-      }
-      logger.log("correct login")
-      return done(null, { username: user.username });
-    });
-  }
-);
-strategy.validPassword = function(password) {
-  logger.log("Strategy.validPassport: "+password+" ? "+this.password);
-  return this.password === password;
-}
-strategy.serializeUser = function(user, done) {
-  logger.log("Strategy.serializeUser: "+user);
-  done(null, user);
-};
-strategy.deserializeUser = function(obj, done) {
-  logger.log("Strategy.deserializeUser: "+obj);
-  done(null, obj);
-};
-module.exports = strategy;
-*/
