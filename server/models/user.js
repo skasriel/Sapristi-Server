@@ -1,4 +1,4 @@
-var Logger = require('./Logger');
+var Logger = require('../Logger');
 var logger = Logger.get(Logger.PASSPORT);
 
 logger.log("starting user");
