@@ -1,4 +1,4 @@
-var request = require('superagent') //require('../../')
+var request = require('superagent') 
   , assert = require('assert')
   , should = require('should');
 

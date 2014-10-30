@@ -12,6 +12,19 @@ test:
 		--growl \
 		$(TESTS)
 
+setState:
+	@NODE_ENV=test NODE_TLS_REJECT_UNAUTHORIZED=0 ./node_modules/.bin/mocha \
+		--require should \
+		--reporter $(REPORTER) \
+		--timeout 5000 \
+		--growl \
+		--env $(env) \
+		--user $(user) \
+		--availability $(availability) \
+		--reason $(reason) \
+		test/setState.js
+
+
 test-cov: lib-cov
 	SUPERAGENT_COV=1 $(MAKE) test REPORTER=html-cov > coverage.html
 
