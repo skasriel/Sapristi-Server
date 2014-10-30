@@ -298,19 +298,19 @@ router.post('/contacts',  auth.isAuthenticated, function(req, res) {
  */
 router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
   var user = req.user;
-  if (user.userState != User.UserStateEnum.CONFIRMED) { // should really check this as a middleward in addition to isAuthenticated
+  if (user.userState != User.UserStateEnum.CONFIRMED) { // should really check this as a middleware in addition to isAuthenticated
     logger.error("Attempt to make a request with a non confirmed user: "+user.username);
     res.status(401);
     res.send(401);
     return;
   }
+
   /* SELECT "Contacts".*, "User"."availability", "User"."updatedAt", "User"."userState"
     FROM "Contacts" LEFT OUTER JOIN "Users" AS "User"
     ON "User"."username" = "Contacts"."toUser"
     WHERE "Contacts"."fromUser"='+145725925';
   */
 
-  //User.findAll({where: {username: user.username}}, { include: [{model: Contact, as: 'origination'}] })
   Contact.findAll({ where: {fromUser: user.username}, include: [{model: User, as: 'destination'}] })
   .error(function(error) {
     logger.error("error retrieving contacts "+error);
@@ -321,13 +321,14 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
     var availabilityList = [];
 
     for (i=0; i<friendList.length; i++) {
-      var friend = friendList[i];
+      var friend = friendList[i]; 
       var displayName = friend.displayName;
-      var updatedAt = new Date(friend.updatedAt);
-      var toUser = friend.toUser;
       var connectionState = friend.connectionState;
-      var userState = friend.destination.userState;
-      var availability = friend.destination.availability;
+      var friendUser = friend.destination;
+      var friendUserName = friendUser.username;
+      var updatedAt = new Date(friendUser.updatedAt);
+      var userState = friendUser.userState;
+      var availability = friendUser.availability;
       /*if (connectionState != Contact.StateEnum.CONNECTED) {
         continue; // you can only see friends who have accepted your invitation
       }*/
@@ -339,11 +340,11 @@ router.get('/friend-availability', auth.isAuthenticated, function(req, res) {
         availability = User.AvailabilityEnum.UNKNOWN;
       }
       availabilityList.push({
-        username: toUser, // the friend's normalized phone number
+        username: friendUserName, // the friend's normalized phone number
         availability: availability, // BUSY, UNKNOWN or AVAILABLE
         updatedAt: updatedAt.toISOString() // the time at which this user's availability was last changed
       });
-      logger.log(req.user.username + " -> " + friend.toUser+": "+displayName+" "+availability+" "+connectionState+" @ "+updatedAt.toISOString());
+      logger.log(req.user.username + " -> " + friendUserName+": "+displayName+" "+availability+" "+connectionState+" @ "+updatedAt.toISOString());
     }
     res.status(200);
     logger.log("sending availability list: "+JSON.stringify(availabilityList));
