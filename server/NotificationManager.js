@@ -103,11 +103,11 @@ var self = module.exports = {
 		var myToken = user.apnToken;
 		if (myToken && user.reason != User.ReasonEnum.User) { // send the user a push notification if the app or server has initiated a status change
 			var myBadge = 0;
-			var myTitle = "availability change" // dummy string, won't be used by client
+			var myTitle = "OK to change my availability to "+user.availability.toLowerCase()+"?" // this string is only used when the push notification is displayed as background app. In foreground, it's rephrased
 			var myPayload = {
-				"category": "AVAILABILITY_CATEGORY",
-			    "messageFrom": "Sapristi",
+				"category": APNEnum.MyAvailability,
 	     		"type": APNEnum.MyAvailability,
+			    "messageFrom": "Sapristi",
 			    "username": user.username,
 			    "availability": user.availability,
 			    "reason": user.reason
@@ -142,9 +142,9 @@ var self = module.exports = {
 		      	if (user.availability == User.AvailabilityEnum.AVAILABLE) {
 			    	var title = displayName+" is available for a call";
 			      	var payload = {
-			      		"category": "AVAILABILITY_CATEGORY",
-			      		"messageFrom": "Sapristi",
+			      		"category": APNEnum.FriendAvailability,
 			      		"type": APNEnum.FriendAvailability,
+			      		"messageFrom": "Sapristi",
 			      		"username": user.username
 			      	};
 			      	self.sendNotification(deviceToken, badge, title, payload);
@@ -182,9 +182,9 @@ var self = module.exports = {
 		      	var badge = 0;
 		    	var title = displayName+" just signed up for Sapristi. You can now see her availability";
 		      	var payload = {
-			      		"category": "AVAILABILITY_CATEGORY",
-			      		"messageFrom": "Sapristi",
+			      		"category": APNEnum.Registration,
 			      		"type": APNEnum.Registration,
+			      		"messageFrom": "Sapristi",
 			      		"username": user.username
 			    };
 			    self.sendNotification(deviceToken, badge, title, payload);
