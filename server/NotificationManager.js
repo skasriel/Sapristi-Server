@@ -103,7 +103,7 @@ var self = module.exports = {
 		var myToken = user.apnToken;
 		if (myToken && user.reason != User.ReasonEnum.User) { // send the user a push notification if the app or server has initiated a status change
 			var myBadge = 0;
-			var myTitle = "OK to change my availability to "+user.availability.toLowerCase()+"?" // this string is only used when the push notification is displayed as background app. In foreground, it's rephrased
+			var myTitle = "OK to change my availability to "+user.availability.toLowerCase()+"? (reason: "+user.reason.toLowerCase+")" // this string is only used when the push notification is displayed as background app. In foreground, it's rephrased
 			var myPayload = {
 				"category": APNEnum.MyAvailability,
 	     		"type": APNEnum.MyAvailability,
