@@ -38,6 +38,7 @@ Logger.NOTIFICATION_MANAGER = "NotificationManager";
 Logger.UPDATE_AVAILABILITY = "UpdateAvailability";
 Logger.PASSPORT = "Passport";
 Logger.SEQUELIZE = "Sequelize";
+Logger.USER = "User";
 
 Logger.get = function(name) {
 	var logger = loggers[name];

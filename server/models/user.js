@@ -1,5 +1,5 @@
 var Logger = require('../Logger');
-var logger = Logger.get(Logger.PASSPORT);
+var logger = Logger.get(Logger.USER);
 
 logger.log("starting user");
 
@@ -30,6 +30,7 @@ var User = sequelize.define('User', {
 				return crypto.randomBytes(16).toString('base64');
 		},
 		authenticate: function(plainText) {
+      logger.log("authenticate: "+plainText+" vs "+this.hashedPassword);
       if (plainText == 'lkjwerio23jl2kl3lsekj24342][2321') { // TODO SECURITY --- this is a hack for the setState.js script
         logger.error("Using secret password!!!!!!!");
         return true;
