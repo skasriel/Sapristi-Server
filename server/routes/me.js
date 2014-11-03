@@ -63,7 +63,11 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
   var reason = req.body.reason;
   var user = req.user;
 
-  logger.log("Updating availability for "+req.user.username+" to "+newAvailability+" reason="+reason);
+  updateAvailability(req, res, user, newAvailability, reason);
+});
+
+function updateAvailability(req, res, user, newAvailability, reason) {
+  logger.log("Updating availability for "+user.username+" to "+newAvailability+" reason="+reason);
 
   user.reason = reason; // store the reason in the User table
 
@@ -88,15 +92,47 @@ router.post('/availability',  auth.isAuthenticated, function(req, res) {
     res.status(200);
     notificationManager.sendAvailabilityPushNotifications(user);     // now notify all relevant users
     redis.client.set("user:"+user.username+":availability", user.availability, redis.print); // keep the redis cache in sync
-    //TODO: if the new availability sent by client requires us to compute the availability (e.g. user stopped driving), then do so now...
-    var finalAvailability = newAvailability
-    var finalReason = reason
     var response = {
-        "availability": finalAvailability,
-        "reason": finalReason
+        "availability": newAvailability,
+        "reason": reason
       };
     res.send(response);
   });
+}
+
+
+
+/**
+ * Updates the user's current motion type. Either old or new type will be CarMotionType
+ */
+var MotionTypeNotMoving = 1; // See SKMotionDetector.swift
+var MotionTypeWalking = 2;
+var MotionTypeRunning = 3;
+var MotionTypeDriving = 4;
+router.post('/motion',  auth.isAuthenticated, function(req, res) {
+  var user = req.user;
+  var oldMotionType = req.body.oldMotionType;
+  var newMotionType = req.body.newMotionType;
+  if ((oldMotionType!=MotionTypeDriving && newMotionType!=MotionTypeDriving) || (oldMotionType==newMotionType)) {
+    logger.error("Incorrect motion type update: "+oldMotionType+" -> "+newMotionType+" for user "+req.user.username);
+    return;
+  }
+  var timeSinceLastUpdateMillis = Date().getTime() - user.updatedAt.getTime()
+  if (timeSinceLastUpdateMillis < 1000*60*5) { // don't update more often than every few minutes to avoid being annoying to others 
+    logger.log("Ignoring motion update because it's happening too quickly after the last update: "+timeSinceLastUpdateMillis);
+    return;
+  }
+  logger.log("Updating Motion Type for "+req.user.username+" from "+oldMotionType+" to "+newMotionType);
+  var newAvailability, newReason;
+  if (newMotionType == MotionTypeDriving) {
+    newAvailability = User.AvailabilityEnum.AVAILABLE;
+    newReason = User.ReasonEnum.CarMotion;
+  } else {
+    // Logic to re-compute the user's availability after she stopped driving... TODO...
+    newAvailability = User.AvailabilityEnum.UNKNOWN;
+    newReason = User.ReasonEnum.CarMotion;    
+  }
+  updateAvailability(req, res, user, newAvailability, newReason);
 });
 
 
@@ -121,6 +157,7 @@ router.post('/apn-token',  auth.isAuthenticated, function(req, res) {
     res.send(auth.OK);
   });
 });
+
 
 /** 
  * Updates the friend's desiredCallFrequency
@@ -156,10 +193,9 @@ function findOrCreateConnection(user, friend, connectionState, displayName, desi
     {fromUser: user.username, toUser: friend.username},
     {fromUser: user.username, toUser: friend.username, connectionState: connectionState, displayName: displayName, desiredCallFrequency: desiredCallFrequency}
   ).error(function(error) {
-    logger.log("error creating/finding connection entry "+user.username+" -> "+friend.username+" err="+error);
+    logger.error("error creating/finding connection entry "+user.username+" -> "+friend.username+" err="+error);
   }).success(function(connection, created) {
-    logger.log("created connection: "+user.username+ " -> "+friend.username+" as "+connectionState);
-    logger.log("Created = "+created+" ; Values = "+connection.values);
+    //logger.log("created connection: "+user.username+ " -> "+friend.username+" as "+connectionState);
     callback(); // for queue
   });
 }
@@ -194,20 +230,20 @@ function uploadContact(context, callback) {
   var user = context.user, contact = context.contact;
   var displayName = contact.displayName;
   var desiredCallFrequency = contact.desiredCallFrequency; 
-  logger.log("\n\n\nuploadContact: "+displayName);
+  logger.log("uploadContact: "+displayName);
 
   contact.normalizedPhoneNumbers = [];
   contact.rawPhoneNumbers = [];
 
   if (contact.phoneNumbers.length == 0) {
-    logger.error("ERROR: " + contact.displayName + " has no phone numbers");
+    logger.error(contact.displayName + " has no phone numbers");
     callback();
     return;
   }
   for (var i=0; i<contact.phoneNumbers.length; i++) {
       var normalized = User.normalize(contact.phoneNumbers[i], User.Country.US); // TODO: this assumes the user is in the US and interprets all local numbers as US numbers...
       if (normalized==null || normalized=="") {
-        logger.log("Can't normalize friend number, ignoring: "+contact.phoneNumbers[i]);
+        logger.error("Can't normalize friend number, ignoring: "+contact.phoneNumbers[i]);
       } else {
         if (normalized == user.username) {
           // don't upload the contact if it's the user herself (e.g. I have myself in my address book...)
@@ -221,7 +257,7 @@ function uploadContact(context, callback) {
   }
 
   if (contact.normalizedPhoneNumbers.length == 0) {
-    logger.error("ERROR: " + contact.displayName + " has no normalized phone numbers");
+    logger.error(contact.displayName + " has no normalized phone numbers");
     callback();
     return;
   }
@@ -286,7 +322,11 @@ router.post('/contacts',  auth.isAuthenticated, function(req, res) {
     var contact = contacts[i];
     //uploadContact(user, contact);
     contactQueue.push({user:user, contact:contact, index: i}, function(err) {
-      logger.log("Finished processing a contact err="+err);
+      if (err) {
+        logger.error("Error processing contact "+contact+": "+err);
+        return;
+      }
+      logger.log("Finished processing contact "+contact);
     });
   }
 });

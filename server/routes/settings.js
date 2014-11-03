@@ -18,7 +18,7 @@ var apn = require('apn');
  * Save my timeslots (times during which the server should show me as available to my frineds)
  */
 router.post('/timeslots',  auth.isAuthenticated, function(req, res) {
-  console.log("In Post /timeslots. username: "+req.user.username+" json="+req.body.json);
+  console.log("In Post /timeslots. username: "+req.user.username);
   var user = req.user;  // sequelize object
   var username = user.username;
   var timeslots = JSON.parse(req.body.json);

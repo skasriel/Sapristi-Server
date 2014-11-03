@@ -2,9 +2,10 @@ var request = require('superagent')
   , assert = require('assert')
   , should = require('should');
 
+var localURL = 'http://localhost:5000';
 var stageURL = 'https://blooming-mountain-4885.herokuapp.com';
 
-var baseURL = stageURL;
+var baseURL = localURL; //stageURL;
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
