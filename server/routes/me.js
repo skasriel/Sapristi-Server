@@ -117,13 +117,18 @@ router.post('/motion',  auth.isAuthenticated, function(req, res) {
     logger.error("Incorrect motion type update: "+oldMotionType+" -> "+newMotionType+" for user "+req.user.username);
     return;
   }
+  /*
+  // Don't switch back & forth too fast, e.g. because user is at a traffic light
+  // this simple logic doesn't work though - because client will only send updates once for each transition from driving to not-driving 
+  // or vice versa so an ignored message here will result in incorrect state until the next client update.
   var now = new Date();
-  var lastUpdate = user.updatedAt; //new Date(user.updatedAt)
-  var timeSinceLastUpdateMillis = now - lastUpdate; //Date().getTime() - Date(user.updatedAt).getTime()
+  var lastUpdate = user.updatedAt; 
+  var timeSinceLastUpdateMillis = now - lastUpdate;
   if (timeSinceLastUpdateMillis < 1000*60*5) { // don't update more often than every few minutes to avoid being annoying to others 
     logger.log("Ignoring motion update because it's happening too quickly after the last update: "+timeSinceLastUpdateMillis);
     return;
-  }
+  }*/
+
   logger.log("Updating Motion Type for "+req.user.username+" from "+oldMotionType+" to "+newMotionType);
   var newAvailability, newReason;
   if (newMotionType == MotionTypeDriving) {
