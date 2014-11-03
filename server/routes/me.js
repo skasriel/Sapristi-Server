@@ -117,7 +117,9 @@ router.post('/motion',  auth.isAuthenticated, function(req, res) {
     logger.error("Incorrect motion type update: "+oldMotionType+" -> "+newMotionType+" for user "+req.user.username);
     return;
   }
-  var timeSinceLastUpdateMillis = Date().getTime() - Date(user.updatedAt).getTime()
+  var now = new Date();
+  var lastUpdate = user.updatedAt; //new Date(user.updatedAt)
+  var timeSinceLastUpdateMillis = now - lastUpdate; //Date().getTime() - Date(user.updatedAt).getTime()
   if (timeSinceLastUpdateMillis < 1000*60*5) { // don't update more often than every few minutes to avoid being annoying to others 
     logger.log("Ignoring motion update because it's happening too quickly after the last update: "+timeSinceLastUpdateMillis);
     return;
